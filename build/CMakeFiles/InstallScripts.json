@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/simonsni/OneDrive - Spraying Systems Co/Desktop/git projects/DearImGuiApp/build/cmake_install.cmake",
+		"C:/Users/simonsni/OneDrive - Spraying Systems Co/Desktop/git projects/DearImGuiApp/build/glfw/cmake_install.cmake",
+		"C:/Users/simonsni/OneDrive - Spraying Systems Co/Desktop/git projects/DearImGuiApp/build/glfw/src/cmake_install.cmake",
+		"C:/Users/simonsni/OneDrive - Spraying Systems Co/Desktop/git projects/DearImGuiApp/build/glfw/docs/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
