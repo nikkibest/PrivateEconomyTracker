@@ -1,0 +1,18 @@
+# Ignore build artifacts
+/build/
+build/
+*.exe
+*.obj
+*.o
+*.log
+*.user
+*.VC.db
+*.VC.opendb
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+imgui.ini
+
+# Ignore VSCode local settings (optional, if you don't want to share them)
+# .vscode/
