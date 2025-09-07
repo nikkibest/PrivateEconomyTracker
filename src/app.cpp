@@ -1,5 +1,6 @@
 #include "app.h"
 #include "imgui.h"
+#include "implot.h"
 #include <iostream>
 
 App::App() {}
@@ -89,6 +90,7 @@ void App::render() {
 
     ImGui::End();        
     ImGui::ShowDemoWindow();
+    ImPlot::ShowDemoWindow();
     
 }
 

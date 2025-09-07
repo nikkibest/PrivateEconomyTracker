@@ -1,5 +1,6 @@
 #include "gui.h"
 #include "imgui.h"
+#include "implot.h"
 
 namespace gui {
 
@@ -98,6 +99,29 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
         ImGui::EndTable();
     }
 
+    // Calculate cumulative savings for 12 months
+    constexpr int months = 12;
+    static double savings[months] = {0};
+    static double xticks[months] = {0};
+    double monthlySum = 0.0;
+    for (const auto& income : incomes) {
+        monthlySum += income.amountNet_month;
+    }
+    for (int i = 0; i < months; ++i) {
+        savings[i] = monthlySum * (i + 1);
+        xticks[i] = i;
+    }
+
+    if (ImPlot::BeginPlot("Expected Savings Accumulation", ImVec2(-1,300))) {
+        static const char* months_labels[months] = {
+            "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
+        };
+        ImPlot::SetupAxes("Month", "Savings (DKK)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+        // ImPlot::SetupAxisTicks(ImAxis_X1, 0, months - 1, months_labels, months);
+        ImPlot::SetupAxisTicks(ImAxis_X1, xticks, months, months_labels);
+        ImPlot::PlotLine("Savings", savings, months);
+        ImPlot::EndPlot();
+    }
     ImGui::End();
 }
 

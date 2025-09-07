@@ -39,11 +39,14 @@ set(SOURCES
     src/utils/plot.cpp
 )
 
+file(GLOB IMPLOT_SOURCES include/external/implot/*.cpp)
+
 # Add executable
 add_executable(${PROJECT_NAME} 
     ${SOURCES}
     ${GLAD_SRC}
     ${IMGUI_SRC}
+    ${IMPLOT_SOURCES}
 )
 
 # set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE OFF)
@@ -57,6 +60,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     include/imgui/backends
     include/imgui/examples/libs/glfw/include
     include/external/json/single_include
+    include/external/implot
 )
 
 # Find and link libraries

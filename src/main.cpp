@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "implot.h"
 #include "app.h"
 #include "gui/gui.h"
 
@@ -60,6 +61,8 @@ int main() {
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+    // Initialize ImPlot
+    ImPlot::CreateContext();
 
     // Create application instance
     App app;
@@ -104,6 +107,9 @@ int main() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+
+    // Cleanup ImPlot
+    ImPlot::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();
