@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build DearImGuiApp",
+            "label": "Build PersonalEconomyTracker",
             "type": "shell",
             "command": "cmake",
             "args": ["--build", "build"],
@@ -11,7 +11,20 @@
                 "isDefault": true
             },
             "problemMatcher": ["$gcc"],
-            "detail": "Build the Dear ImGui application using CMake and MinGW"
+            "detail": "Build the PersonalEconomyTracker application using CMake and MinGW",
+        },
+        {
+            "label": "KillApp",
+            "type": "shell",
+            "command": "taskkill /IM PrivateEconomyTracker.exe /F >nul 2>&1",
+            "problemMatcher": [],
+            "detail": "Kill the running PrivateEconomyTracker application if it is open",
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": ["/d", "/c"]
+                }
+            }
         }
     ]
 }

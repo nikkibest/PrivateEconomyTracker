@@ -1,0 +1,51 @@
+[
+    {
+        "amountNet": 30748.0,
+        "amountNet_month": 30748.0,
+        "amountNet_year": 368976.0,
+        "nrAnnualPayments": 12.0,
+        "source": "TeeJet Salary"
+    },
+    {
+        "amountNet": 20303.0,
+        "amountNet_month": 1691.9166259765625,
+        "amountNet_year": 20303.0,
+        "nrAnnualPayments": 1.0,
+        "source": "TeeJet Bonus"
+    },
+    {
+        "amountNet": 140.0,
+        "amountNet_month": 140.0,
+        "amountNet_year": 1680.0,
+        "nrAnnualPayments": 12.0,
+        "source": "TeeJet 30% fradrag A-kasse"
+    },
+    {
+        "amountNet": 29950.0,
+        "amountNet_month": 29950.0,
+        "amountNet_year": 359400.0,
+        "nrAnnualPayments": 12.0,
+        "source": "Kruger Salary"
+    },
+    {
+        "amountNet": 140.0,
+        "amountNet_month": 140.0,
+        "amountNet_year": 1680.0,
+        "nrAnnualPayments": 12.0,
+        "source": "Kruger 30% fradrag A-kasse"
+    },
+    {
+        "amountNet": 1000.0,
+        "amountNet_month": 83.33333587646484,
+        "amountNet_year": 1000.0,
+        "nrAnnualPayments": 1.0,
+        "source": "Danmark forsikring"
+    },
+    {
+        "amountNet": 1000.0,
+        "amountNet_month": 83.33333587646484,
+        "amountNet_year": 1000.0,
+        "nrAnnualPayments": 1.0,
+        "source": "Forbrugsforeningen"
+    }
+]

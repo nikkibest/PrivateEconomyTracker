@@ -2,10 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch DearImGuiApp",
+            "name": "Launch PrivateEconomyTracker",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/PrivateEconomyTracker.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "KillApp"
+        },
+        {
+            "name": "Launch PersonalEconomyTracker",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/DearImGuiApp.exe",
+            "program": "${workspaceFolder}/build/PersonalEconomyTracker.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

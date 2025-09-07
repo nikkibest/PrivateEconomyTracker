@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(DearImGuiApp)
+project(PersonalEconomyTracker)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,18 +16,37 @@ file(GLOB IMGUI_SRC
 # GLAD source
 set(GLAD_SRC src/glad.c)
 
-# Main application
-set(APP_SRC src/main.cpp)
-
 # Add GLFW as a subdirectory
 add_subdirectory(glfw)
 
-# Combine all sources
-add_executable(${PROJECT_NAME}
-    ${APP_SRC}
+# Include directories
+include_directories(
+    src
+    src/gui
+    src/model
+    src/data
+    src/utils
+)
+
+
+# Source files
+set(SOURCES
+    src/main.cpp
+    src/app.cpp
+    src/gui/gui.cpp
+    src/model/transaction.cpp
+    src/data/storage.cpp
+    src/utils/plot.cpp
+)
+
+# Add executable
+add_executable(${PROJECT_NAME} 
+    ${SOURCES}
     ${GLAD_SRC}
     ${IMGUI_SRC}
 )
+
+# set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE OFF)
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -37,10 +56,17 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     include/imgui
     include/imgui/backends
     include/imgui/examples/libs/glfw/include
+    include/external/json/single_include
 )
 
-# Link system libraries
-target_link_libraries(${PROJECT_NAME}
+# Find and link libraries
+# find_package(OpenGL REQUIRED)
+# find_package(GLM REQUIRED)
+# find_package(glfw3 REQUIRED)
+# find_package(GLAD REQUIRED)
+# find_package(imgui REQUIRED)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE 
     glfw
     OpenGL32
     gdi32
