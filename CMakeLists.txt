@@ -4,20 +4,18 @@ project(PersonalEconomyTracker)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ImGui source files
 file(GLOB IMGUI_SRC
-    include/imgui/*.cpp
-    include/imgui/*.h
-    include/imgui/backends/imgui_impl_glfw.cpp
-    include/imgui/backends/imgui_impl_opengl3.cpp
+    include/external/imgui/*.cpp
+    include/external/imgui/*.h
+    include/external/imgui/backends/imgui_impl_glfw.cpp
+    include/external/imgui/backends/imgui_impl_opengl3.cpp
 )
 
 
 # GLAD source
 set(GLAD_SRC src/glad.c)
 
-# Add GLFW as a subdirectory
-add_subdirectory(glfw)
+add_subdirectory(include/external/glfw)
 
 # Include directories
 include_directories(
@@ -39,7 +37,10 @@ set(SOURCES
     src/utils/plot.cpp
 )
 
-file(GLOB IMPLOT_SOURCES include/external/implot/*.cpp)
+file(GLOB IMPLOT_SOURCES 
+    include/external/implot/*.cpp
+    include/external/implot/backends/*.cpp
+)
 
 # Add executable
 add_executable(${PROJECT_NAME} 
@@ -56,9 +57,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     include
     include/glad
     include/KHR
-    include/imgui
-    include/imgui/backends
-    include/imgui/examples/libs/glfw/include
+    include/external/imgui
+    include/external/imgui/backends
+    include/external/imgui/examples/libs/glfw/include
     include/external/json/single_include
     include/external/implot
 )
