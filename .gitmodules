@@ -4,3 +4,9 @@
 [submodule "include/external/implot"]
 	path = include/external/implot
 	url = https://github.com/epezent/implot.git
+[submodule "include/external/glfw"]
+	path = include/external/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "include/external/imgui"]
+	path = include/external/imgui
+	url = https://github.com/ocornut/imgui.git
