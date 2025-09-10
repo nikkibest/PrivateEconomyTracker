@@ -47,12 +47,5 @@
         "amountNet_year": 1000.0,
         "nrAnnualPayments": 1.0,
         "source": "Forbrugsforeningen"
-    },
-    {
-        "amountNet": 123.0,
-        "amountNet_month": 10.25,
-        "amountNet_year": 123.0,
-        "nrAnnualPayments": 1.0,
-        "source": "sc"
     }
 ]

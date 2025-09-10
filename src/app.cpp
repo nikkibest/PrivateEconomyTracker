@@ -87,6 +87,8 @@ void App::render() {
 
     // Enter application code here
     gui::ShowIncomeInput(incomes);
+    gui::ShowExpenseInput(expense);
+    gui::plotExpensesAndIncomes(expense, incomes);
 
     ImGui::End();        
     ImGui::ShowDemoWindow();
