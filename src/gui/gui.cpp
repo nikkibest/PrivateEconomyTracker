@@ -271,11 +271,11 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
         // ImPlot::SetupAxisTicks(ImAxis_X1, 0, months - 1, months_labels, months);
         ImPlot::SetupAxisTicks(ImAxis_X1, xticks, months, months_labels);
         // Use format_euro for y-axis tick labels
-        ImPlot::SetupAxisFormat(ImAxis_Y1, [](double value, char* buff, int size) {
-            std::string euro = format_euro(value);
-            strncpy(buff, euro.c_str(), size);
-            buff[size - 1] = '\0';
-        });
+        // ImPlot::SetupAxisFormat(ImAxis_Y1, [](double value, char* buff, int size) {
+        //     std::string euro = format_euro(value);
+        //     strncpy(buff, euro.c_str(), size);
+        //     buff[size - 1] = '\0';
+        // });
         ImPlot::PlotLine("Savings", savings, months);
         ImPlot::EndPlot();
     }
@@ -339,36 +339,82 @@ void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded,
 void plotExpensesAndIncomes(const std::vector<Expense>& expenses, const std::vector<Income>& incomes) 
 {
     ImGui::Begin("Budget Visualsation");
-    // Calculate cumulative expenses and incomes for 12 months
-    constexpr int months = 12;
-    static double cumulativeExpenses[months] = {0};
-    static double cumulativeIncomes[months] = {0};
-    static double cumulativeDifference[months] = {0};
-    static double xticks[months] = {0};
+    // Slider for months
+    static int months = 12;
+    ImGui::SliderInt("Time (Months)", &months, 1, 10*12);
+    static int inflationRate = 2;
+    ImGui::SliderInt("Inflation Rate (%)", &inflationRate, 0, 10);
+
+    // Input field for target value
+    static double targetValue = 0.0;
+    ImGui::InputDouble("Target Surplus (DKK)", &targetValue, 1000.0, 1000000.0, "%.0f");
+    
+
+    // Dynamically allocate arrays based on months
+    std::vector<double> cumulativeExpenses(months, 0.0);
+    std::vector<double> cumulativeIncomes(months, 0.0);
+    std::vector<double> cumulativeDifference(months, 0.0);
+    static double now = (double)time(nullptr);
+    std::vector<double> time(months, 0.0);
     double monthlyExpenseSum = 0.0;
+    double monthlyIncomeSum = 0.0;
     for (const auto& expense : expenses) {
         monthlyExpenseSum += expense.amountNet_month;
     }
-    double monthlyIncomeSum = 0.0;
     for (const auto& income : incomes) {
         monthlyIncomeSum += income.amountNet_month;
     }
+    int surpassIdx = -1;
     for (int i = 0; i < months; ++i) {
-        cumulativeExpenses[i] = monthlyExpenseSum * (i + 1);
-        cumulativeIncomes[i] = monthlyIncomeSum * (i + 1);
+        cumulativeExpenses[i]   = monthlyExpenseSum * (i + 1);
+        cumulativeIncomes[i]    = monthlyIncomeSum * (i + 1);
         cumulativeDifference[i] = cumulativeIncomes[i] - cumulativeExpenses[i];
-        xticks[i] = i;
+        time[i] = now + i * 30.0 * 24.0 * 3600.0; // Approximate month as 30 days
+        if (i % 12 == 0) {
+            // Apply inflation adjustment at the end of each year
+            monthlyExpenseSum *= (1.0 + inflationRate / 100.0);
+            monthlyIncomeSum  *= (1.0 + inflationRate / 100.0);
+        }
+        if (surpassIdx == -1 && cumulativeDifference[i] >= targetValue) {
+            surpassIdx = i;
+        }
+    }
+
+    // Show date when cumulativeDifference surpasses targetValue
+    if (targetValue > 0.0 && surpassIdx != -1) {
+        time_t t = (time_t)time[surpassIdx];
+        struct tm* tm_info = localtime(&t);
+        char dateStr[32];
+        strftime(dateStr, sizeof(dateStr), "%d-%m-%Y", tm_info);
+        ImGui::Text("Target reached on: %s", dateStr);
+    } else if (targetValue > 0.0) {
+        ImGui::Text("Target not reached within selected months.");
     }
     if (ImPlot::BeginPlot("Cumulative Expenses and Incomes", ImVec2(-1,300))) {
-        static const char* months_labels[months] = {
-            "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
-        };
-        ImPlot::SetupAxes("Month", "Amount (DKK)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-        // ImPlot::SetupAxisTicks(ImAxis_X1, 0, months - 1, months_labels, months);
-        ImPlot::SetupAxisTicks(ImAxis_X1, xticks, months, months_labels);
-        ImPlot::PlotLine("Cumulative Expenses", cumulativeExpenses, months);
-        ImPlot::PlotLine("Cumulative Incomes", cumulativeIncomes, months);
-        ImPlot::PlotLine("Cumulative Surplus", cumulativeDifference, months);
+        ImPlot::SetupAxisScale(ImAxis_X1, ImPlotScale_Time);
+        ImPlot::SetupAxis(ImAxis_Y1, "Amount (DKK)", ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxisFormat(ImAxis_Y1, format_euro_implot);
+        // Set x-axis limits to fit the selected months
+        if (months > 0) {
+            ImPlot::SetupAxisLimits(ImAxis_X1, time.front(), time.back(), ImPlotCond_Always);
+        }
+
+        ImPlot::PlotLine("Cumulative Expenses", time.data(), cumulativeExpenses.data(), months);
+        ImPlot::PlotLine("Cumulative Incomes", time.data(), cumulativeIncomes.data(), months);
+        ImPlot::PlotLine("Cumulative Surplus", time.data(), cumulativeDifference.data(), months);
+
+        // Add marker for target value
+        if (targetValue > 0.0 && surpassIdx != -1) {
+            ImPlot::PlotScatter("Target Surpassed", &time[surpassIdx], &cumulativeDifference[surpassIdx], 1);
+            char markerLabel[64];
+            time_t t = (time_t)time[surpassIdx];
+            struct tm* tm_info = localtime(&t);
+            char dateStr[32];
+            strftime(dateStr, sizeof(dateStr), "%d-%m-%Y", tm_info);
+            snprintf(markerLabel, sizeof(markerLabel), "Target: %s\nDate: %s", format_euro(cumulativeDifference[surpassIdx]).c_str(), dateStr);
+            ImPlot::TagX(time[surpassIdx], ImVec4(0,0.5,0,1), "%s\n%s", format_euro(cumulativeDifference[surpassIdx]).c_str(), dateStr);
+        }
+
         ImPlot::EndPlot();
     }
     ImGui::End();
