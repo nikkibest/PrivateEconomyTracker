@@ -5,7 +5,6 @@
 #include "imgui_impl_opengl3.h"
 #include "implot.h"
 #include "app.h"
-#include "gui/gui.h"
 
 #include <iostream>
 

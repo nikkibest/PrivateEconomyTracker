@@ -86,16 +86,18 @@ void App::render() {
     }
 
     // Enter application code here
-    gui::ShowIncomeInput(incomes);
-    gui::ShowExpenseInput(expense);
-    gui::plotExpensesAndIncomes(expense, incomes);
+    // Enter current cash amount
+    budget::ShowIncomeInput(incomes);
+    budget::ShowExpenseInput(expense);
+    // Visualize savings, income and expenses and future expectations
+    budget::plotBudget(expense, incomes);
+    // Visualize Rich Dad Poor Dad Income Statement/Balance Sheet
 
-    ImGui::End();        
+
+
+    ImGui::End();        // End DockSpace window
     ImGui::ShowDemoWindow();
     ImPlot::ShowDemoWindow();
     
 }
 
-void App::addIncome(const Income& income) {
-    incomes.push_back(income);
-}

@@ -1,19 +1,130 @@
-#include "gui.h"
+#include "budget.h"
 #include "imgui.h"
 #include "implot.h"
 #include <iostream>
 
-namespace gui {
+namespace budget {
+
+void ShowIncomeInput(std::vector<Income>& incomes) {    
+    static bool loaded = false;
+    const std::string filename = "../budget.json";
+    if (!loaded) {
+        // Load incomes from file or initialize as needed
+        // load_incomes(incomes, "../incomes.json");
+        load_json_array(incomes, filename, "incomes.incomes");
+        loaded = true;
+    }
+    static char source[64] = "";
+    static float nrAnnualPayments = 0.0f;
+    static float monthly = 0.0f;
+    static float yearly = 0.0f;
+    static float amount = 0.0f;
+    ImGui::Begin("Incomes");
+    ImGui::Text("Add all household incomes here.");
+    ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
+    ImGui::InputFloat("Nr. Annual Payments", &nrAnnualPayments);
+    ImGui::InputFloat("Amount", &amount);
+
+    if (ImGui::Button("Add Income")) {
+        if (strlen(source) > 0 && amount > 0.0f) {
+            yearly = amount * nrAnnualPayments;
+            monthly = yearly / 12.0f;
+            incomes.push_back(Income{
+                source, 
+                static_cast<double>(nrAnnualPayments), 
+                static_cast<double>(amount), 
+                static_cast<double>(monthly), 
+                static_cast<double>(yearly)
+            });
+            save_json_array(incomes, filename, "incomes.incomes");
+            source[0] = '\0';
+            nrAnnualPayments = 0.0f;
+            amount = 0.0f;
+            monthly = 0.0f;
+            yearly = 0.0f;
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::Text("All Incomes:");
+    double totalYearly = 0.0;
+    if (ImGui::BeginTable("IncomeTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+        ImGui::TableSetupColumn("Source");
+        ImGui::TableSetupColumn("Nr. Annual Payments");
+        ImGui::TableSetupColumn("Amount (DKK)");
+        ImGui::TableSetupColumn("Monthly (DKK)");
+        ImGui::TableSetupColumn("Yearly (DKK)");
+        ImGui::TableSetupColumn("Delete");
+        ImGui::TableHeadersRow();
+
+        for (int i = 0; i < incomes.size(); ++i) {
+            const auto& income = incomes[i];
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextUnformatted(income.source.c_str());
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextUnformatted(format_euro(income.nrAnnualPayments).c_str());
+            ImGui::TableSetColumnIndex(2);
+            ImGui::TextUnformatted(format_euro(income.amountNet).c_str());
+            ImGui::TableSetColumnIndex(3);
+            ImGui::TextUnformatted(format_euro(income.amountNet_month).c_str());
+            ImGui::TableSetColumnIndex(4);
+            ImGui::TextUnformatted(format_euro(income.amountNet_year).c_str());
+            totalYearly += income.amountNet_year;
+            
+            // Add a delete button in a new column
+            ImGui::TableSetColumnIndex(5);
+            std::string btnLabel = "Delete##" + std::to_string(i);
+            if (ImGui::Button(btnLabel.c_str())) {
+                incomes.erase(incomes.begin() + i);
+                save_json_array(incomes, filename, "incomes.incomes");
+                // To avoid skipping the next entry after erase
+                --i;
+                continue;
+            }
+        }
+        ImGui::EndTable();
+    }
+    ImGui::Text("All Incomes:");
+    if (ImGui::BeginTable("IncomeTableSummary", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+        double avgMonthly = totalYearly / 12.0f;
+        ImGui::TableSetupColumn("Total Yearly (DKK)");
+        ImGui::TableSetupColumn("Avg. Monthly (DKK)");
+        ImGui::TableHeadersRow();
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::TextUnformatted(format_euro(totalYearly).c_str());
+        ImGui::TableSetColumnIndex(1);
+        ImGui::TextUnformatted(format_euro(avgMonthly).c_str());
+        ImGui::EndTable();
+    }
+    // Calculate cumulative savings for 12 months
+    constexpr int months = 12;
+    static double savings[months] = {0};
+    static double xticks[months] = {0};
+    double monthlySum = 0.0;
+    for (const auto& income : incomes) {
+        monthlySum += income.amountNet_month;
+    }
+    for (int i = 0; i < months; ++i) {
+        savings[i] = monthlySum * (i + 1);
+        xticks[i] = i;
+    }
+    ImGui::End();
+}
 
 void ShowExpenseInput(std::vector<Expense>& expenses) {
     ImGui::Begin("Expenses");
     ImGui::Text("Add all household expenses here.");
-    const std::string filename = "../expenses.json";
+    const std::string filename = "../budget.json";
 
     static bool loaded = false;
     if (!loaded) {
         // Load incomes from file or initialize as needed
-        load_expenses(expenses, "../expenses.json", "expenses");
+        // load_expenses(expenses, "../expenses.json", "expenses");
+        // load_json_array(expenses, "../expenses.json", "expenses");
+        load_json_array(expenses, filename, "expenses.expenses");
         loaded = true;
     }
 
@@ -32,9 +143,9 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
     static std::vector<std::string> categories;
     static bool isLoadedCategories = false;
     static int idxSelectedCategory = 0;
-    std::string extension = "categories";
-    static char newCategory[128] = "";
-    gui::CreateComboWithDeleteAndAdd(categories, isLoadedCategories, idxSelectedCategory, "category", filename, extension, newCategory);
+    std::string extension = "expenses.categories";
+    static char newCategory[64] = "";
+    budget::CreateComboWithDeleteAndAdd(categories, isLoadedCategories, idxSelectedCategory, "category", filename, extension, newCategory);
     strncpy(category, categories[idxSelectedCategory].c_str(), sizeof(category) - 1);
     category[sizeof(category) - 1] = '\0';
 
@@ -43,8 +154,8 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
     static bool isLoadedPersons = false;
     static int  idxSelectedPerson = 0;
     extension = "persons";
-    static char newPerson[128] = "";
-    gui::CreateComboWithDeleteAndAdd(persons, isLoadedPersons, idxSelectedPerson, "person", filename, extension, newPerson);
+    static char newPerson[64] = "";
+    budget::CreateComboWithDeleteAndAdd(persons, isLoadedPersons, idxSelectedPerson, "person", filename, extension, newPerson);
     strncpy(person, persons[idxSelectedPerson].c_str(), sizeof(person) - 1);
     person[sizeof(person) - 1] = '\0';
 
@@ -80,7 +191,7 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
                 static_cast<double>(monthly), 
                 static_cast<double>(yearly)
             });
-            save_expenses(expenses, "../expenses.json", "expenses");
+            save_json_array(expenses, filename, "expenses.expenses");
             source[0] = '\0';
             nrAnnualPayments = 0.0f;
             amount = 0.0f;
@@ -134,7 +245,7 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
             std::string btnLabel = "Delete##" + std::to_string(i);
             if (ImGui::Button(btnLabel.c_str())) {
                 expenses.erase(expenses.begin() + i);
-                save_expenses(expenses, "../expenses.json","expenses");
+                save_json_array(expenses, filename, "expenses.expenses");
                 // To avoid skipping the next entry after erase
                 --i;
                 continue;
@@ -159,136 +270,13 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
     ImGui::End();
 }
 
-void ShowIncomeInput(std::vector<Income>& incomes) {    
-    static bool loaded = false;
-    if (!loaded) {
-        // Load incomes from file or initialize as needed
-        load_incomes(incomes, "../incomes.json");
-        loaded = true;
-    }
-    static char source[64] = "";
-    static float nrAnnualPayments = 0.0f;
-    static float monthly = 0.0f;
-    static float yearly = 0.0f;
-    static float amount = 0.0f;
-    ImGui::Begin("Incomes");
-    ImGui::Text("Add all household incomes here.");
-    ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
-    ImGui::InputFloat("Nr. Annual Payments", &nrAnnualPayments);
-    ImGui::InputFloat("Amount", &amount);
-
-    if (ImGui::Button("Add Income")) {
-        if (strlen(source) > 0 && amount > 0.0f) {
-            yearly = amount * nrAnnualPayments;
-            monthly = yearly / 12.0f;
-            incomes.push_back(Income{
-                source, 
-                static_cast<double>(nrAnnualPayments), 
-                static_cast<double>(amount), 
-                static_cast<double>(monthly), 
-                static_cast<double>(yearly)
-            });
-            save_incomes(incomes, "../incomes.json");
-            source[0] = '\0';
-            nrAnnualPayments = 0.0f;
-            amount = 0.0f;
-            monthly = 0.0f;
-            yearly = 0.0f;
-        }
-    }
-
-    ImGui::Separator();
-    ImGui::Text("All Incomes:");
-    double totalYearly = 0.0;
-    if (ImGui::BeginTable("IncomeTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
-        ImGui::TableSetupColumn("Source");
-        ImGui::TableSetupColumn("Nr. Annual Payments");
-        ImGui::TableSetupColumn("Amount (DKK)");
-        ImGui::TableSetupColumn("Monthly (DKK)");
-        ImGui::TableSetupColumn("Yearly (DKK)");
-        ImGui::TableSetupColumn("Delete");
-        ImGui::TableHeadersRow();
-
-        for (int i = 0; i < incomes.size(); ++i) {
-            const auto& income = incomes[i];
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextUnformatted(income.source.c_str());
-            ImGui::TableSetColumnIndex(1);
-            ImGui::TextUnformatted(format_euro(income.nrAnnualPayments).c_str());
-            ImGui::TableSetColumnIndex(2);
-            ImGui::TextUnformatted(format_euro(income.amountNet).c_str());
-            ImGui::TableSetColumnIndex(3);
-            ImGui::TextUnformatted(format_euro(income.amountNet_month).c_str());
-            ImGui::TableSetColumnIndex(4);
-            ImGui::TextUnformatted(format_euro(income.amountNet_year).c_str());
-            totalYearly += income.amountNet_year;
-            
-            // Add a delete button in a new column
-            ImGui::TableSetColumnIndex(5);
-            std::string btnLabel = "Delete##" + std::to_string(i);
-            if (ImGui::Button(btnLabel.c_str())) {
-                incomes.erase(incomes.begin() + i);
-                save_incomes(incomes, "../incomes.json");
-                // To avoid skipping the next entry after erase
-                --i;
-                continue;
-            }
-        }
-        ImGui::EndTable();
-    }
-    ImGui::Text("All Incomes:");
-    if (ImGui::BeginTable("IncomeTableSummary", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
-        double avgMonthly = totalYearly / 12.0f;
-        ImGui::TableSetupColumn("Total Yearly (DKK)");
-        ImGui::TableSetupColumn("Avg. Monthly (DKK)");
-        ImGui::TableHeadersRow();
-
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::TextUnformatted(format_euro(totalYearly).c_str());
-        ImGui::TableSetColumnIndex(1);
-        ImGui::TextUnformatted(format_euro(avgMonthly).c_str());
-        ImGui::EndTable();
-    }
-    // Calculate cumulative savings for 12 months
-    constexpr int months = 12;
-    static double savings[months] = {0};
-    static double xticks[months] = {0};
-    double monthlySum = 0.0;
-    for (const auto& income : incomes) {
-        monthlySum += income.amountNet_month;
-    }
-    for (int i = 0; i < months; ++i) {
-        savings[i] = monthlySum * (i + 1);
-        xticks[i] = i;
-    }
-    if (ImPlot::BeginPlot("Expected Savings Accumulation", ImVec2(-1,300))) {
-        static const char* months_labels[months] = {
-            "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
-        };
-        ImPlot::SetupAxes("Month", "Savings (DKK)", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-        // ImPlot::SetupAxisTicks(ImAxis_X1, 0, months - 1, months_labels, months);
-        ImPlot::SetupAxisTicks(ImAxis_X1, xticks, months, months_labels);
-        // Use format_euro for y-axis tick labels
-        // ImPlot::SetupAxisFormat(ImAxis_Y1, [](double value, char* buff, int size) {
-        //     std::string euro = format_euro(value);
-        //     strncpy(buff, euro.c_str(), size);
-        //     buff[size - 1] = '\0';
-        // });
-        ImPlot::PlotLine("Savings", savings, months);
-        ImPlot::EndPlot();
-    }
-    ImGui::End();
-}
-
 
 void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem)
 {
     if (!isLoaded) {
         // Load categories from expenses.json file
         isLoaded = true;   
-        load_items(item, filename, extension);
+        load_json_array(item, filename, extension);
     }
     std::string btnLabel;
     // Combo selection for categor
@@ -312,7 +300,7 @@ void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded,
             item.erase(item.begin() + selectedIndex);
             if (selectedIndex >= static_cast<int>(item.size()))
                 selectedIndex = static_cast<int>(item.size()) - 1;
-            save_items(item, filename, extension);
+            save_json_array(item, filename, extension);
             isLoaded = false; // Force reload to update the combo
         }
         ImGui::SameLine();
@@ -331,12 +319,12 @@ void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded,
         item.push_back(std::string(newItem));
         selectedIndex = static_cast<int>(item.size()) - 1;
         newItem[0] = '\0';
-        save_items(item, filename, extension);
+        save_json_array(item, filename, extension);
         isLoaded = false; // Force reload to update the combo
     }
 }
 
-void plotExpensesAndIncomes(const std::vector<Expense>& expenses, const std::vector<Income>& incomes) 
+void plotBudget(const std::vector<Expense>& expenses, const std::vector<Income>& incomes) 
 {
     ImGui::Begin("Budget Visualsation");
     // Slider for months
@@ -419,4 +407,4 @@ void plotExpensesAndIncomes(const std::vector<Expense>& expenses, const std::vec
     }
     ImGui::End();
 }
-} // namespace gui
+} // namespace budget

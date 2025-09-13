@@ -1,20 +1,19 @@
-#ifndef GUI_H
-#define GUI_H
+#ifndef BUDGET_H
+#define BUDGET_H
 
 #include <vector>
-#include "model/income.h"
-#include "model/expense.h"
-#include "utils/numbers.h"
+#include "data/budgetData.h"
+#include "utils/numbersFormat.h"
 
-namespace gui {
-
+namespace budget {
+    // void ShowBankBalanceInout(std::vector<BankBalance>& bankBalance);
     void ShowIncomeInput(std::vector<Income>& incomes);
     void ShowExpenseInput(std::vector<Expense>& expenses);
 
     void CreateComboWithDeleteAndAdd(std::vector<std::string>& item,  bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem);
 
-    void plotExpensesAndIncomes(const std::vector<Expense>& expenses, const std::vector<Income>& incomes);
+    void plotBudget(const std::vector<Expense>& expenses, const std::vector<Income>& incomes);
 }
 
 
-#endif // GUI_H
+#endif // BUDGET_H

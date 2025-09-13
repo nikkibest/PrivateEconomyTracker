@@ -2,11 +2,8 @@
 #define APP_H
 
 #include <vector>
-#include "model/income.h"
-#include "model/expense.h"
-#include "model/transaction.h"
-#include "gui/gui.h"
-#include "data/storage.h"
+#include "data/budgetData.h"
+#include "budget/budget.h"
 
 class App {
 public:
@@ -15,7 +12,6 @@ public:
 
     void initialize();
     void render();
-    void addIncome(const Income& income);
 private:
     std::vector<Income> incomes; 
     std::vector<Expense> expense; 

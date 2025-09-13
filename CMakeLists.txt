@@ -26,8 +26,7 @@ add_subdirectory(include/external/glfw)
 # Include directories
 include_directories(
     src
-    src/gui
-    src/model
+    src/budget
     src/data
     src/utils
 )
@@ -37,10 +36,7 @@ include_directories(
 set(SOURCES
     src/main.cpp
     src/app.cpp
-    src/gui/gui.cpp
-    src/model/transaction.cpp
-    src/data/storage.cpp
-    src/utils/plot.cpp
+    src/budget/budget.cpp
 )
 
 file(GLOB IMPLOT_SOURCES 

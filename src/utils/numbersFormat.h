@@ -1,5 +1,5 @@
-#ifndef NUMBERS_H
-#define NUMBERS_H
+#ifndef NUMBERSFORMAT_H
+#define NUMBERSFORMAT_H
 
 // Add this function to your gui.cpp or a utility header
 #include <sstream>
@@ -27,4 +27,4 @@ inline int format_euro_implot(double value, char* buff, int size, void*) {
     return (int)euro.size();
 }
 
-#endif // NUMBERS_H
+#endif // NUMBERSFORMAT_H

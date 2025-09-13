@@ -1,0 +1,507 @@
+{
+    "expenses": {
+        "categories": [
+            "Bolig",
+            "Forsikring",
+            "Underholdning",
+            "Telefoni",
+            "Fagforening",
+            "A-kasse",
+            "Helbred",
+            "Gaver",
+            "Ferie",
+            "Mad",
+            "Transport"
+        ],
+        "expenses": [
+            {
+                "amountNet": 9864.0,
+                "amountNet_month": 9864.0,
+                "amountNet_year": 118368.0,
+                "category": "Bolig",
+                "nrAnnualPayments": 12.0,
+                "person": "Alle",
+                "source": "Husleje",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 668.0,
+                "amountNet_month": 55.66666793823242,
+                "amountNet_year": 668.0,
+                "category": "Forsikring",
+                "nrAnnualPayments": 1.0,
+                "person": "Alle",
+                "source": "Tryg Indboforsikring (IDA)",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 603.0,
+                "amountNet_month": 50.25,
+                "amountNet_year": 603.0,
+                "category": "Forsikring",
+                "nrAnnualPayments": 1.0,
+                "person": "Alle",
+                "source": "Tryg Årsrejseforsikring (IDA)",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 200.0,
+                "amountNet_month": 16.66666603088379,
+                "amountNet_year": 200.0,
+                "category": "Bolig",
+                "nrAnnualPayments": 1.0,
+                "person": "Skattimus",
+                "source": "Boligforening i Aalborg",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 4223.0,
+                "amountNet_month": 351.9166564941406,
+                "amountNet_year": 4223.0,
+                "category": "Forsikring",
+                "nrAnnualPayments": 1.0,
+                "person": "Alle",
+                "source": "Bilforsikring (IDA)",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 169.0,
+                "amountNet_month": 169.0,
+                "amountNet_year": 2028.0,
+                "category": "Underholdning",
+                "nrAnnualPayments": 12.0,
+                "person": "Skatti",
+                "source": "Spotify",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Forbrug"
+            },
+            {
+                "amountNet": 79.0,
+                "amountNet_month": 79.0,
+                "amountNet_year": 948.0,
+                "category": "Underholdning",
+                "nrAnnualPayments": 12.0,
+                "person": "Skattimus",
+                "source": "Disney Plus",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Forbrug"
+            },
+            {
+                "amountNet": 45.0,
+                "amountNet_month": 45.0,
+                "amountNet_year": 540.0,
+                "category": "Underholdning",
+                "nrAnnualPayments": 12.0,
+                "person": "Skatti",
+                "source": "HBO Max",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Forbrug"
+            },
+            {
+                "amountNet": 300.0,
+                "amountNet_month": 50.0,
+                "amountNet_year": 600.0,
+                "category": "Transport",
+                "nrAnnualPayments": 2.0,
+                "person": "Alle",
+                "source": "Dækskifte",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 710.0,
+                "amountNet_month": 59.16666793823242,
+                "amountNet_year": 710.0,
+                "category": "Transport",
+                "nrAnnualPayments": 1.0,
+                "person": "Alle",
+                "source": "Grøn ejerafgift",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 3388.0,
+                "amountNet_month": 282.3333435058594,
+                "amountNet_year": 3388.0,
+                "category": "Forsikring",
+                "nrAnnualPayments": 1.0,
+                "person": "Kayla",
+                "source": "IDA Hundeforsikring",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 200.0,
+                "amountNet_month": 16.66666603088379,
+                "amountNet_year": 200.0,
+                "category": "Transport",
+                "nrAnnualPayments": 1.0,
+                "person": "Kayla",
+                "source": "Dækopbevaring",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 774.0,
+                "amountNet_month": 64.5,
+                "amountNet_year": 774.0,
+                "category": "Forsikring",
+                "nrAnnualPayments": 1.0,
+                "person": "Skatti",
+                "source": "Ulykkeforsikring (IDA)",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 124.0,
+                "amountNet_month": 124.0,
+                "amountNet_year": 1488.0,
+                "category": "Telefoni",
+                "nrAnnualPayments": 12.0,
+                "person": "Skatti",
+                "source": "CallMe",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 391.0,
+                "amountNet_month": 130.3333282470703,
+                "amountNet_year": 1564.0,
+                "category": "Forsikring",
+                "nrAnnualPayments": 4.0,
+                "person": "Skatti",
+                "source": "Sygeforsikring Danmark",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 878.0,
+                "amountNet_month": 292.6666564941406,
+                "amountNet_year": 3512.0,
+                "category": "Fagforening",
+                "nrAnnualPayments": 4.0,
+                "person": "Skatti",
+                "source": "IDA Ingeniørforening",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 1401.0,
+                "amountNet_month": 467.0,
+                "amountNet_year": 5604.0,
+                "category": "A-kasse",
+                "nrAnnualPayments": 4.0,
+                "person": "Skatti",
+                "source": "A-kassen Akademikernes",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 239.0,
+                "amountNet_month": 239.0,
+                "amountNet_year": 2868.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 12.0,
+                "person": "Skatti",
+                "source": "Nordkraft styrketræning",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 2565.0,
+                "amountNet_month": 213.75,
+                "amountNet_year": 2565.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 1.0,
+                "person": "Skatti",
+                "source": "Aalborg Danse Center",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Forbrug"
+            },
+            {
+                "amountNet": 795.0,
+                "amountNet_month": 66.25,
+                "amountNet_year": 795.0,
+                "category": "Forsikring",
+                "nrAnnualPayments": 1.0,
+                "person": "Skattimus",
+                "source": "Ulykkeforsikring (IDA)",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 350.0,
+                "amountNet_month": 350.0,
+                "amountNet_year": 4200.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 12.0,
+                "person": "Skattimus",
+                "source": "Kontaklinser",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 140.0,
+                "amountNet_month": 140.0,
+                "amountNet_year": 1680.0,
+                "category": "Telefoni",
+                "nrAnnualPayments": 12.0,
+                "person": "Skattimus",
+                "source": "CallMe",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 125.0,
+                "amountNet_month": 10.416666984558105,
+                "amountNet_year": 125.0,
+                "category": "Bolig",
+                "nrAnnualPayments": 1.0,
+                "person": "Skattimus",
+                "source": "Ungdomsbo",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 878.0,
+                "amountNet_month": 292.6666564941406,
+                "amountNet_year": 3512.0,
+                "category": "Fagforening",
+                "nrAnnualPayments": 4.0,
+                "person": "Skattimus",
+                "source": "IDA Ingeniørforening",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 1401.0,
+                "amountNet_month": 467.0,
+                "amountNet_year": 5604.0,
+                "category": "A-kasse",
+                "nrAnnualPayments": 4.0,
+                "person": "Skattimus",
+                "source": "A-kassen Akademikernes",
+                "typeAccount": "Budgetkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 2565.0,
+                "amountNet_month": 213.75,
+                "amountNet_year": 2565.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 1.0,
+                "person": "Skattimus",
+                "source": "Aalborg Danse Center",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Forbrug"
+            },
+            {
+                "amountNet": 380.0,
+                "amountNet_month": 380.0,
+                "amountNet_year": 4560.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 12.0,
+                "person": "Skattimus",
+                "source": "Yoga huset",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Forbrug"
+            },
+            {
+                "amountNet": 300.0,
+                "amountNet_month": 800.0,
+                "amountNet_year": 9600.0,
+                "category": "Gaver",
+                "nrAnnualPayments": 32.0,
+                "person": "Alle",
+                "source": "Julegavber+føds gaver",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 20000.0,
+                "amountNet_month": 3333.333251953125,
+                "amountNet_year": 40000.0,
+                "category": "Ferie",
+                "nrAnnualPayments": 2.0,
+                "person": "Alle",
+                "source": "Ferie opsparing",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 400.0,
+                "amountNet_month": 133.3333282470703,
+                "amountNet_year": 1600.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 4.0,
+                "person": "Alle",
+                "source": "Tandlæge",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 300.0,
+                "amountNet_month": 100.0,
+                "amountNet_year": 1200.0,
+                "category": "Transport",
+                "nrAnnualPayments": 4.0,
+                "person": "Alle",
+                "source": "Rejsekort",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 2000.0,
+                "amountNet_month": 2000.0,
+                "amountNet_year": 24000.0,
+                "category": "Mad",
+                "nrAnnualPayments": 12.0,
+                "person": "Alle",
+                "source": "Restaurant/take-away",
+                "typeAccount": "Forbrugskonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 4000.0,
+                "amountNet_month": 4000.0,
+                "amountNet_year": 48000.0,
+                "category": "Mad",
+                "nrAnnualPayments": 12.0,
+                "person": "Alle",
+                "source": "Dagligvarer",
+                "typeAccount": "Forbrugskonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 2500.0,
+                "amountNet_month": 2500.0,
+                "amountNet_year": 30000.0,
+                "category": "Transport",
+                "nrAnnualPayments": 12.0,
+                "person": "Alle",
+                "source": "Benzin",
+                "typeAccount": "Forbrugskonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 250.0,
+                "amountNet_month": 20.83333396911621,
+                "amountNet_year": 250.0,
+                "category": "Transport",
+                "nrAnnualPayments": 1.0,
+                "person": "Alle",
+                "source": "Servicesyn",
+                "typeAccount": "Forbrugskonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 600.0,
+                "amountNet_month": 600.0,
+                "amountNet_year": 7200.0,
+                "category": "Mad",
+                "nrAnnualPayments": 12.0,
+                "person": "Kayla",
+                "source": "Tørfoder+Godbidder",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 4500.0,
+                "amountNet_month": 375.0,
+                "amountNet_year": 4500.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 1.0,
+                "person": "Kayla",
+                "source": "Dyrlæge+vaccinationer",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 700.0,
+                "amountNet_month": 116.66666412353516,
+                "amountNet_year": 1400.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 2.0,
+                "person": "Kayla",
+                "source": "Pleje, grooming, negle",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            },
+            {
+                "amountNet": 700.0,
+                "amountNet_month": 58.33333206176758,
+                "amountNet_year": 700.0,
+                "category": "Helbred",
+                "nrAnnualPayments": 1.0,
+                "person": "Kayla",
+                "source": "Diverse",
+                "typeAccount": "Lønkonto",
+                "typeExpense": "Must"
+            }
+        ]
+    },
+    "incomes": {
+        "incomes": [
+            {
+                "amountNet": 30748.0,
+                "amountNet_month": 30748.0,
+                "amountNet_year": 368976.0,
+                "nrAnnualPayments": 12.0,
+                "source": "TeeJet Salary"
+            },
+            {
+                "amountNet": 20303.0,
+                "amountNet_month": 1691.9166259765625,
+                "amountNet_year": 20303.0,
+                "nrAnnualPayments": 1.0,
+                "source": "TeeJet Bonus"
+            },
+            {
+                "amountNet": 140.0,
+                "amountNet_month": 140.0,
+                "amountNet_year": 1680.0,
+                "nrAnnualPayments": 12.0,
+                "source": "TeeJet 30% fradrag A-kasse"
+            },
+            {
+                "amountNet": 29950.0,
+                "amountNet_month": 29950.0,
+                "amountNet_year": 359400.0,
+                "nrAnnualPayments": 12.0,
+                "source": "Kruger Salary"
+            },
+            {
+                "amountNet": 140.0,
+                "amountNet_month": 140.0,
+                "amountNet_year": 1680.0,
+                "nrAnnualPayments": 12.0,
+                "source": "Kruger 30% fradrag A-kasse"
+            },
+            {
+                "amountNet": 1000.0,
+                "amountNet_month": 83.33333587646484,
+                "amountNet_year": 1000.0,
+                "nrAnnualPayments": 1.0,
+                "source": "Danmark forsikring"
+            },
+            {
+                "amountNet": 1000.0,
+                "amountNet_month": 83.33333587646484,
+                "amountNet_year": 1000.0,
+                "nrAnnualPayments": 1.0,
+                "source": "Forbrugsforeningen"
+            }
+        ]
+    },
+    "persons": [
+        "Skatti",
+        "Skattimus",
+        "Kayla",
+        "Alle"
+    ]
+}
