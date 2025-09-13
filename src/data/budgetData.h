@@ -6,6 +6,21 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
+inline const std::string filename = "../budget.json";
+
+struct BankBalance {
+    std::string source;
+    double amountNet;        
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BankBalance, source, amountNet);
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BankBalance, source, amountNet);
+};
+inline std::vector<std::string> bankbalanceTableHeader = {
+    "Source", "Amount (DKK)", "Delete"
+};
+inline std::vector<std::string> bankbalanceTableOrder = {
+    "source", "amountNet"
+};
+
 struct Income {
     std::string source;
     double nrAnnualPayments;
@@ -15,21 +30,12 @@ struct Income {
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(Income, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year);
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Income, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year);
 };
-
-inline void save_incomes(const std::vector<Income>& incomes, const std::string& filename) {
-    nlohmann::json j = incomes;
-    std::ofstream file(filename);
-    file << j.dump(4);
-}
-
-inline void load_incomes(std::vector<Income>& incomes, const std::string& filename) {
-    std::ifstream file(filename);
-    if (file) {
-        nlohmann::json j;
-        file >> j;
-        incomes = j.get<std::vector<Income>>();
-    }
-}
+inline std::vector<std::string> incomeTableHeader = {
+    "Source", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)", "Delete"
+};
+inline std::vector<std::string> incomeTableOrder = {
+    "source", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"
+};
 
 struct Expense {
     std::string source;
@@ -45,18 +51,27 @@ struct Expense {
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(Expense, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Expense, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
 };
+inline std::vector<std::string> expenseTableHeader = {
+    "Source", "Category", "Person", "Type", "Account", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)", "Delete"
+};
+inline std::vector<std::string> expenseTableOrder = {
+    "source", "category", "person", "typeExpense", "typeAccount", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"
+};
 
 // Save item to budget.json with nested keys using dot notation
 // Example: key = "expenses.expenses" will save to j["expenses"]["expenses"]
 // This function will create missing objects for intermediate keys if needed.
 template<typename T>
-inline void save_json_array(const std::vector<T>& in, const std::string& filename, const std::string& key) {
+inline void save__to__json(const T& in, const std::string& filename, const std::string& key) {
     nlohmann::json j;
     std::ifstream file(filename);
-    if (file) {
-        file >> j;
-        file.close();
+    if (!file){
+        std::cerr << "[ERROR] load_from_json: File '" << filename << "' does not exist.\n";
+        std::cin.get();
+        std::exit(EXIT_FAILURE);
     }
+    file >> j;
+    file.close();
     // Split key by '.' for nested access
     std::vector<std::string> keys;
     size_t start = 0, end = 0;
@@ -82,44 +97,56 @@ inline void save_json_array(const std::vector<T>& in, const std::string& filenam
 // Load item from budget.json with nested keys using dot notation
 // Example: key = "expenses.expenses" will load from j["expenses"]["expenses"]
 // This function will safely traverse the nested keys and only load if the final key is an array.
+// Helper for vector types
 template<typename T>
-inline void load_json_array(std::vector<T>& out, const std::string& filename, const std::string& key) {
-    std::ifstream file(filename);
+void load_from_json_impl(std::vector<T>& out, nlohmann::json* ptr) {
     out.clear();
-    if (file) {
-        nlohmann::json j;
-        file >> j;
-        // Split key by '.' for nested access
-        std::vector<std::string> keys;
-        size_t start = 0, end = 0;
-        while ((end = key.find('.', start)) != std::string::npos) {
-            keys.push_back(key.substr(start, end - start));
-            start = end + 1;
+    if (ptr && ptr->is_array()) {
+        for (const auto& item : *ptr) {
+            out.push_back(item.get<T>());
         }
-        keys.push_back(key.substr(start));
-        // Traverse nested objects for each key
-        nlohmann::json* ptr = &j;
-        bool missing = false;
-        for (const auto& k : keys) {
-            if (ptr->contains(k)) {
-                ptr = &((*ptr)[k]);
-            } else {
-                missing = true;
-                ptr = nullptr;
-                break;
-            }
-        }
-        // Only load if the final key is an array
-        if (ptr && ptr->is_array()) {
-            for (const auto& item : *ptr) {
-                out.push_back(item.get<T>());
-            }
-        } else if (missing) {
-            std::cerr << "[ERROR] load_json_array: Key '" << key << "' does not exist in '" << filename << "'.\n";
+    }
+}
+
+// Helper for scalar types
+template<typename T>
+void load_from_json_impl(T& out, nlohmann::json* ptr) {
+    if (ptr && (ptr->is_number() || ptr->is_string() || ptr->is_boolean())) {
+        out = ptr->get<T>();
+    }
+}
+
+template<typename T>
+inline void load_from_json(T& out, const std::string& filename, const std::string& key) {
+    std::ifstream file(filename);
+    if (!file){
+        std::cerr << "[ERROR] load_from_json: File '" << filename << "' does not exist.\n";
+        std::cin.get();
+        std::exit(EXIT_FAILURE);
+    }
+    nlohmann::json j;
+    file >> j;
+    file.close();
+    // Split key by '.' for nested access
+    std::vector<std::string> keys;
+    size_t start = 0, end = 0;
+    while ((end = key.find('.', start)) != std::string::npos) {
+        keys.push_back(key.substr(start, end - start));
+        start = end + 1;
+    }
+    keys.push_back(key.substr(start));
+    // Traverse nested objects for each key
+    nlohmann::json* ptr = &j;
+    for (const auto& k : keys) {
+        if (ptr->contains(k)) {
+            ptr = &((*ptr)[k]);
+        } else {
+            std::cerr << "[ERROR] load_from_json: Key '" << key << "' does not exist in '" << filename << "'.\n";
             std::cin.get();
             std::exit(EXIT_FAILURE);
         }
     }
+    load_from_json_impl(out, ptr);
 }
 
 /*
@@ -133,14 +160,14 @@ How this logic works:
 5. You can use these functions for any vector type (Expense, Income, std::string, etc.) and any nested key path.
 
 Example usage:
-save_json_array(expenses, "budget.json", "expenses.expenses");
-load_json_array(expenses, "budget.json", "expenses.expenses");
-save_json_array(categories, "budget.json", "expenses.categories");
-load_json_array(categories, "budget.json", "expenses.categories");
-save_json_array(incomes, "budget.json", "incomes.incomes");
-load_json_array(incomes, "budget.json", "incomes.incomes");
-save_json_array(persons, "budget.json", "persons");
-load_json_array(persons, "budget.json", "persons");
+save__to__json(expenses, "budget.json", "expenses.expenses");
+load_from_json(expenses, "budget.json", "expenses.expenses");
+save__to__json(categories, "budget.json", "expenses.categories");
+load_from_json(categories, "budget.json", "expenses.categories");
+save__to__json(incomes, "budget.json", "incomes.incomes");
+load_from_json(incomes, "budget.json", "incomes.incomes");
+save__to__json(persons, "budget.json", "persons");
+load_from_json(persons, "budget.json", "persons");
 -------------------
 */
 

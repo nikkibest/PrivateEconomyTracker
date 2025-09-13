@@ -13,8 +13,9 @@ public:
     void initialize();
     void render();
 private:
-    std::vector<Income> incomes; 
-    std::vector<Expense> expense; 
+    std::vector<BankBalance> bankBalance; 
+    std::vector<Income> incomes;
+    std::vector<Expense> expenses;
 };
 
 #endif // APP_H

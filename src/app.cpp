@@ -87,10 +87,11 @@ void App::render() {
 
     // Enter application code here
     // Enter current cash amount
+    budget::ShowBankBalanceInput(bankBalance);
     budget::ShowIncomeInput(incomes);
-    budget::ShowExpenseInput(expense);
+    budget::ShowExpenseInput(expenses);
     // Visualize savings, income and expenses and future expectations
-    budget::plotBudget(expense, incomes);
+    budget::PlotBudget(expenses, incomes);
     // Visualize Rich Dad Poor Dad Income Statement/Balance Sheet
 
 

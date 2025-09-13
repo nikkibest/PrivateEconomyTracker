@@ -1,5 +1,19 @@
 {
+    "balance": {
+        "balance": [
+            {
+                "amountNet": 68631.0,
+                "source": "Lønkonto Skatti"
+            },
+            {
+                "amountNet": 102844.0,
+                "source": "Lønkonto Skattimus"
+            }
+        ],
+        "totalBalance": 171475.0
+    },
     "expenses": {
+        "avgMonthly": 28528.5,
         "categories": [
             "Bolig",
             "Forsikring",
@@ -443,9 +457,11 @@
                 "typeAccount": "Lønkonto",
                 "typeExpense": "Must"
             }
-        ]
+        ],
+        "totalYearly": 342342.0
     },
     "incomes": {
+        "avgMonthly": 62836.583333333336,
         "incomes": [
             {
                 "amountNet": 30748.0,
@@ -496,7 +512,8 @@
                 "nrAnnualPayments": 1.0,
                 "source": "Forbrugsforeningen"
             }
-        ]
+        ],
+        "totalYearly": 754039.0
     },
     "persons": [
         "Skatti",
