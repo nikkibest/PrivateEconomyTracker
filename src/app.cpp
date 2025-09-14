@@ -93,7 +93,7 @@ void App::render() {
     // Visualize savings, income and expenses and future expectations
     budget::PlotBudget(expenses, incomes);
     // Visualize Rich Dad Poor Dad Income Statement/Balance Sheet
-
+    richDadPoorDad::DrawRichDadDiagram(incomes, expenses);
 
 
     ImGui::End();        // End DockSpace window

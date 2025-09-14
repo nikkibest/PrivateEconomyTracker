@@ -4,7 +4,7 @@
 #include <vector>
 #include "data/budgetData.h"
 #include "budget/budget.h"
-
+#include "portfolio/richDadPoorDad.h"
 class App {
 public:
     App();

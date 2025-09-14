@@ -27,6 +27,7 @@ add_subdirectory(include/external/glfw)
 include_directories(
     src
     src/budget
+    src/portfolio
     src/data
     src/utils
 )
@@ -37,6 +38,7 @@ set(SOURCES
     src/main.cpp
     src/app.cpp
     src/budget/budget.cpp
+    src/portfolio/richDadPoorDad.cpp
 )
 
 file(GLOB IMPLOT_SOURCES 
