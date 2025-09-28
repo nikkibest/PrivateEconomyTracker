@@ -9,35 +9,38 @@
 inline const std::string filename = "../budget.json";
 
 struct BankBalance {
+    int id = 0;
     std::string source;
-    double amountNet;        
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BankBalance, source, amountNet);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BankBalance, source, amountNet);
+    double amountNet;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BankBalance, id, source, amountNet);
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BankBalance, id, source, amountNet);
 };
 inline std::vector<std::string> bankbalanceTableHeader = {
-    "Source", "Amount (DKK)", "Delete"
+    "Source", "Amount (DKK)"
 };
 inline std::vector<std::string> bankbalanceTableOrder = {
     "source", "amountNet"
 };
 
 struct Income {
+    int id = 0;
     std::string source;
     double nrAnnualPayments;
     double amountNet;     // after taxes
     double amountNet_month;     // after taxes
     double amountNet_year;      // after taxes
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Income, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Income, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Income, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year);
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Income, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year);
 };
 inline std::vector<std::string> incomeTableHeader = {
-    "Source", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)", "Delete"
+    "Source", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)"
 };
 inline std::vector<std::string> incomeTableOrder = {
     "source", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"
 };
 
 struct Expense {
+    int id = 0;
     std::string source;
     std::string category;
     std::string person;
@@ -48,11 +51,11 @@ struct Expense {
     double amountNet_month;
     double amountNet_year;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Expense, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Expense, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
 };
 inline std::vector<std::string> expenseTableHeader = {
-    "Source", "Category", "Person", "Type", "Account", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)", "Delete"
+    "Source", "Category", "Person", "Type", "Account", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)"
 };
 inline std::vector<std::string> expenseTableOrder = {
     "source", "category", "person", "typeExpense", "typeAccount", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"

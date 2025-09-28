@@ -1,6 +1,7 @@
 #include "budget.h"
 #include "imgui.h"
 #include "implot.h"
+#include <set>
 #include <iostream>
 #define CHECKBOX_FLAG(flags, flag) ImGui::CheckboxFlags(#flag, (unsigned int*)&flags, flag)
 
@@ -12,6 +13,7 @@ void ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) {
         load_from_json(bankBalance, filename, "balance.balance");
         loaded = true;
     }
+    static int editId = 0;
     static char source[64] = "";
     static float amount = 0.0f;
     ImGui::Begin("Bank Balance");
@@ -19,20 +21,63 @@ void ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) {
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
     ImGui::InputFloat("Amount", &amount);
 
-    if (ImGui::Button("Add Bank Balance")) {
-        if (strlen(source) > 0 && amount > 0.0f) {
-            bankBalance.push_back(BankBalance{
-                source, 
-                static_cast<double>(amount), 
-            });
-            save__to__json(bankBalance, filename, "balance.balance");
+     // Helper to copy income data to input fields
+    auto SetEditBalance = [&](const BankBalance& bal) {
+        editId = bal.id;
+        strncpy(source, bal.source.c_str(), sizeof(source) - 1);
+        source[sizeof(source) - 1] = '\0';
+        amount = static_cast<float>(bal.amountNet);
+    };
+
+    if (editId == 0) {
+        if (ImGui::Button("Add Bank Balance")) {
+            if (strlen(source) > 0 && amount > 0.0f) {
+                // Find the first unused positive integer ID
+                std::set<int> usedIds;
+                for (const auto& bal : bankBalance) {
+                    usedIds.insert(bal.id);
+                }
+                int newId = 1;
+                while (usedIds.count(newId)) {
+                    ++newId;
+                }
+                bankBalance.push_back(BankBalance{
+                    newId,
+                    std::string(source),
+                    static_cast<double>(amount),
+                });
+                save__to__json(bankBalance, filename, "balance.balance");
+                source[0] = '\0';
+                amount = 0.0f;
+                // Update summary values
+                ComputeDependentValues(bankBalance, filename, "balance");
+            }
+        }
+    } else {
+        if (ImGui::Button("Save Changes")) {
+            if (strlen(source) > 0 && amount > 0.0f) {
+                for (auto& bal : bankBalance) {
+                    if (bal.id == editId) {
+                        bal.source = source;
+                        bal.amountNet = static_cast<double>(amount);
+                        break;
+                    }
+                }
+                save__to__json(bankBalance, filename, "balance.balance");
+                source[0] = '\0';
+                amount = 0.0f;
+                editId = 0;
+                ComputeDependentValues(bankBalance, filename, "balance");
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel Editting")) {
             source[0] = '\0';
             amount = 0.0f;
-            // Update summary values
-            ComputeDependentValues(bankBalance, filename, "balance");
+            editId = 0;
         }
     }
-
+    
     ImGui::Separator();
     ImGui::Text("Summary of all Bank Balances:");
     if (ImGui::BeginTable("BankBalanceTableSummary", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
@@ -48,7 +93,7 @@ void ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) {
 
     ImGui::Separator();
     ImGui::Text("All Bank Balances:");
-    CreateTable("IncomeTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance");    
+    CreateTable<BankBalance>("IncomeTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance", SetEditBalance);    
     ImGui::End();
 }
 
@@ -60,6 +105,8 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
         load_from_json(incomes, filename, "incomes.incomes");
         loaded = true;
     }
+    // Static for editing
+    static int editId = 0;
     static char source[64] = "";
     static float nrAnnualPayments = 0.0f;
     static float monthly = 0.0f;
@@ -71,25 +118,82 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
     ImGui::InputFloat("Nr. Annual Payments", &nrAnnualPayments);
     ImGui::InputFloat("Amount", &amount);
 
-    if (ImGui::Button("Add Income")) {
-        if (strlen(source) > 0 && amount > 0.0f) {
-            yearly = amount * nrAnnualPayments;
-            monthly = yearly / 12.0f;
-            incomes.push_back(Income{
-                source, 
-                static_cast<double>(nrAnnualPayments), 
-                static_cast<double>(amount), 
-                static_cast<double>(monthly), 
-                static_cast<double>(yearly)
-            });
-            save__to__json(incomes, filename, "incomes.incomes");
+    // Helper to copy income data to input fields
+    auto SetEditIncome = [&](const Income& inc) {
+        editId = inc.id;
+        strncpy(source, inc.source.c_str(), sizeof(source) - 1);
+        source[sizeof(source) - 1] = '\0';
+        nrAnnualPayments = static_cast<float>(inc.nrAnnualPayments);
+        amount = static_cast<float>(inc.amountNet);
+        monthly = static_cast<float>(inc.amountNet_month);
+        yearly = static_cast<float>(inc.amountNet_year);
+    };
+
+    if (editId == 0) {
+        if (ImGui::Button("Add Income")) {
+            if (strlen(source) > 0 && amount > 0.0f) {
+                yearly = amount * nrAnnualPayments;
+                monthly = yearly / 12.0f;
+                // Find the first unused positive integer ID
+                std::set<int> usedIds;
+                for (const auto& inc : incomes) {
+                    usedIds.insert(inc.id);
+                }
+                int newId = 1;
+                while (usedIds.count(newId)) {
+                    ++newId;
+                }
+                incomes.push_back(Income{
+                    newId,
+                    std::string(source),
+                    static_cast<double>(nrAnnualPayments),
+                    static_cast<double>(amount),
+                    static_cast<double>(monthly),
+                    static_cast<double>(yearly)
+                });
+                save__to__json(incomes, filename, "incomes.incomes");
+                source[0] = '\0';
+                nrAnnualPayments = 0.0f;
+                amount = 0.0f;
+                monthly = 0.0f;
+                yearly = 0.0f;
+                // Update summary values
+                ComputeDependentValues(incomes, filename, "incomes");
+            }
+        }
+    } else {
+        if (ImGui::Button("Save Changes")) {
+            if (strlen(source) > 0 && amount > 0.0f) {
+                yearly = amount * nrAnnualPayments;
+                monthly = yearly / 12.0f;
+                for (auto& inc : incomes) {
+                    if (inc.id == editId) {
+                        inc.source = source;
+                        inc.nrAnnualPayments = static_cast<double>(nrAnnualPayments);
+                        inc.amountNet = static_cast<double>(amount);
+                        inc.amountNet_month = static_cast<double>(monthly);
+                        inc.amountNet_year = static_cast<double>(yearly);
+                        break;
+                    }
+                }
+                save__to__json(incomes, filename, "incomes.incomes");
+                source[0] = '\0';
+                nrAnnualPayments = 0.0f;
+                amount = 0.0f;
+                monthly = 0.0f;
+                yearly = 0.0f;
+                editId = 0;
+                ComputeDependentValues(incomes, filename, "incomes");
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel Editting")) {
             source[0] = '\0';
             nrAnnualPayments = 0.0f;
             amount = 0.0f;
             monthly = 0.0f;
             yearly = 0.0f;
-            // Update summary values
-            ComputeDependentValues(incomes, filename, "incomes");
+            editId = 0;
         }
     }
 
@@ -113,7 +217,7 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
 
     ImGui::Separator();
     ImGui::Text("All Incomes:");
-    CreateTable("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes");    
+    CreateTable<Income>("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes", SetEditIncome);    
     ImGui::End();
 }
 
@@ -139,13 +243,25 @@ void ComputeDependentValues(std::vector<T>& items, const std::string filename, c
 }
 
 void ShowExpenseInput(std::vector<Expense>& expenses) {
-    ImGui::Begin("Expenses");
-    ImGui::Text("Add a new household expense here.");
-    static bool loaded = false;
-    if (!loaded) {
-        load_from_json(expenses, filename, "expenses.expenses");
-        loaded = true;
-    }
+    // UI state variables for categories and persons
+    static std::vector<std::string> categories;
+    static bool isLoadedCategories = false;
+    static int idxSelectedCategory = 0;
+    static char newCategory[64] = "";
+    static std::vector<std::string> persons;
+    static bool isLoadedPersons = false;
+    static int idxSelectedPerson = 0;
+    static char newPerson[64] = "";
+    // Combo options and indices
+    static const char* mustExpenditureOptions[] = { "Must", "Forbrug" };
+    static int mustExpenditureIdx = 0;
+    static const char* accountTypeOptions[] = { "Budgetkonto", "Forbrugskonto", "Lønkonto" };
+    static int accountTypeIdx = 0;
+    std::string extension;
+    // Static for editing
+    static int editId = 0;
+    // ...existing code...
+    // Input fields
     static char source[64] = "";
     static char category[64] = "";
     static char person[64] = "";
@@ -155,68 +271,127 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
     static float monthly = 0.0f;
     static float yearly = 0.0f;
     static float amount = 0.0f;
+    // Helper to copy expense data to input fields
+    auto SetEditExpense = [&](const Expense& exp) {
+        editId = exp.id;
+        strncpy(source, exp.source.c_str(), sizeof(source) - 1);
+        source[sizeof(source) - 1] = '\0';
+        strncpy(category, exp.category.c_str(), sizeof(category) - 1);
+        category[sizeof(category) - 1] = '\0';
+        strncpy(person, exp.person.c_str(), sizeof(person) - 1);
+        person[sizeof(person) - 1] = '\0';
+        strncpy(typeExpense, exp.typeExpense.c_str(), sizeof(typeExpense) - 1);
+        typeExpense[sizeof(typeExpense) - 1] = '\0';
+        strncpy(typeAccount, exp.typeAccount.c_str(), sizeof(typeAccount) - 1);
+        typeAccount[sizeof(typeAccount) - 1] = '\0';
+        nrAnnualPayments = static_cast<float>(exp.nrAnnualPayments);
+        amount = static_cast<float>(exp.amountNet);
+        monthly = static_cast<float>(exp.amountNet_month);
+        yearly = static_cast<float>(exp.amountNet_year);
+    };
+    // ...existing code...
+    ImGui::Begin("Expenses");
+    ImGui::Text("Add a new household expense here.");
+    static bool loaded = false;
+    if (!loaded) {
+        load_from_json(expenses, filename, "expenses.expenses");
+        loaded = true;
+    }
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
-    
     // Categories
-    static std::vector<std::string> categories;
-    static bool isLoadedCategories = false;
-    static int idxSelectedCategory = 0;
-    std::string extension = "expenses.categories";
-    static char newCategory[64] = "";
+    extension = "expenses.categories";
     budget::CreateComboWithDeleteAndAdd(categories, isLoadedCategories, idxSelectedCategory, "category", filename, extension, newCategory);
     strncpy(category, categories[idxSelectedCategory].c_str(), sizeof(category) - 1);
     category[sizeof(category) - 1] = '\0';
-
     // Persons
-    static std::vector<std::string> persons;
-    static bool isLoadedPersons = false;
-    static int  idxSelectedPerson = 0;
     extension = "persons";
-    static char newPerson[64] = "";
     budget::CreateComboWithDeleteAndAdd(persons, isLoadedPersons, idxSelectedPerson, "person", filename, extension, newPerson);
     strncpy(person, persons[idxSelectedPerson].c_str(), sizeof(person) - 1);
     person[sizeof(person) - 1] = '\0';
-
     // Must/Expenditure Combo
-    static const char* mustExpenditureOptions[] = { "Must", "Forbrug" };
-    static int mustExpenditureIdx = 0;
     ImGui::Combo("Expense Type", &mustExpenditureIdx, mustExpenditureOptions, IM_ARRAYSIZE(mustExpenditureOptions));
     strncpy(typeExpense, mustExpenditureOptions[mustExpenditureIdx], sizeof(typeExpense) - 1);
     typeExpense[sizeof(typeExpense) - 1] = '\0';
-
     // Account Type Combo
-    static const char* accountTypeOptions[] = { "Budgetkonto", "Forbrugskonto", "Lønkonto" };
-    static int accountTypeIdx = 0;
     ImGui::Combo("Account Type", &accountTypeIdx, accountTypeOptions, IM_ARRAYSIZE(accountTypeOptions));
     strncpy(typeAccount, accountTypeOptions[accountTypeIdx], sizeof(typeAccount) - 1);
     typeAccount[sizeof(typeAccount) - 1] = '\0';
-
     ImGui::InputFloat("Nr. Annual Payments", &nrAnnualPayments);
     ImGui::InputFloat("Amount", &amount);
     // Add Expense button
-    if (ImGui::Button("Add Expense")) {
-        if (strlen(source) > 0 && amount > 0.0f) {
-            yearly = amount * nrAnnualPayments;
-            monthly = yearly / 12.0f;
-            expenses.push_back(Expense{
-                source, 
-                category,
-                person,
-                typeExpense,
-                typeAccount,
-                static_cast<double>(nrAnnualPayments), 
-                static_cast<double>(amount), 
-                static_cast<double>(monthly), 
-                static_cast<double>(yearly)
-            });
-            save__to__json(expenses, filename, "expenses.expenses");
+    if (editId == 0) {
+        if (ImGui::Button("Add Expense")) {
+            if (strlen(source) > 0 && amount > 0.0f) {
+                yearly = amount * nrAnnualPayments;
+                monthly = yearly / 12.0f;
+                // Find the first unused positive integer ID
+                std::set<int> usedIds;
+                for (const auto& exp : expenses) {
+                    usedIds.insert(exp.id);
+                }
+                int newId = 1;
+                while (usedIds.count(newId)) {
+                    ++newId;
+                }
+                expenses.push_back(Expense{
+                    newId,
+                    std::string(source),
+                    std::string(category),
+                    std::string(person),
+                    std::string(typeExpense),
+                    std::string(typeAccount),
+                    static_cast<double>(nrAnnualPayments),
+                    static_cast<double>(amount),
+                    static_cast<double>(monthly),
+                    static_cast<double>(yearly)
+                });
+                save__to__json(expenses, filename, "expenses.expenses");
+                source[0] = '\0';
+                nrAnnualPayments = 0.0f;
+                amount = 0.0f;
+                monthly = 0.0f;
+                yearly = 0.0f;
+                // Update summary values
+                ComputeDependentValues(expenses, filename, "expenses");
+            }
+        }
+    } else {
+        if (ImGui::Button("Save Changes")) {
+            if (strlen(source) > 0 && amount > 0.0f) {
+                yearly = amount * nrAnnualPayments;
+                monthly = yearly / 12.0f;
+                for (auto& exp : expenses) {
+                    if (exp.id == editId) {
+                        exp.source = source;
+                        exp.category = category;
+                        exp.person = person;
+                        exp.typeExpense = typeExpense;
+                        exp.typeAccount = typeAccount;
+                        exp.nrAnnualPayments = static_cast<double>(nrAnnualPayments);
+                        exp.amountNet = static_cast<double>(amount);
+                        exp.amountNet_month = static_cast<double>(monthly);
+                        exp.amountNet_year = static_cast<double>(yearly);
+                        break;
+                    }
+                }
+                save__to__json(expenses, filename, "expenses.expenses");
+                source[0] = '\0';
+                nrAnnualPayments = 0.0f;
+                amount = 0.0f;
+                monthly = 0.0f;
+                yearly = 0.0f;
+                editId = 0;
+                ComputeDependentValues(expenses, filename, "expenses");
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel Editting")) {
             source[0] = '\0';
             nrAnnualPayments = 0.0f;
             amount = 0.0f;
             monthly = 0.0f;
             yearly = 0.0f;
-            // Update summary values
-            ComputeDependentValues(expenses, filename, "expenses");
+            editId = 0;
         }
     }
 
@@ -240,12 +415,20 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
     }
     ImGui::Separator();
     ImGui::Text("All Expenses:");
-    CreateTable("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses");
+    CreateTable<Expense>("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses", SetEditExpense);
     ImGui::End();
 }
 
 void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem)
 {
+    if (extension.empty()) {
+        std::cerr << "[ERROR] CreateComboWithDeleteAndAdd: extension key is empty for label '" << label << "'." << std::endl;
+        return;
+    }
+    if (extension.empty()) {
+        std::cerr << "[ERROR] CreateComboWithDeleteAndAdd: extension key is empty for label '" << label << "'." << std::endl;
+        return;
+    }
     if (!isLoaded) {
         // Load categories from expenses.json file
         isLoaded = true;   
@@ -298,11 +481,14 @@ void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded,
 }
 
 template<typename T>
-void CreateTable(const char* tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key) {
-    if (ImGui::BeginTable(tableName, tableHeaders.size(), ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+void CreateTable(const char* tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::function<void(const T&)> editCallback) {
+    // Add an extra column for Edit button
+    if (ImGui::BeginTable(tableName, tableHeaders.size() + 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
         for (int i = 0; i < tableHeaders.size(); ++i) {
             ImGui::TableSetupColumn(tableHeaders[i].c_str());
         }
+        ImGui::TableSetupColumn("Edit");
+        ImGui::TableSetupColumn("Delete");
         ImGui::TableHeadersRow();
         // Loop over data and populate rows
         for (int i = 0; i < items.size(); ++i) {
@@ -320,15 +506,20 @@ void CreateTable(const char* tableName, std::vector<T>& items, const std::vector
                     ImGui::TextUnformatted("?");
                 }
             }
+            // Add an edit button in the last column
+            ImGui::TableSetColumnIndex(tableHeaders.size());
+            std::string editLabel = "Edit##" + std::to_string(i);
+            if (editCallback && ImGui::Button(editLabel.c_str())) {
+                editCallback(item);
+            }
             // Add a delete button in a new column
-            ImGui::TableSetColumnIndex(tableHeaders.size()-1);
+            ImGui::TableSetColumnIndex(tableHeaders.size()+1);
             std::string btnLabel = "Delete##" + std::to_string(i);
             if (ImGui::Button(btnLabel.c_str())) {
                 items.erase(items.begin() + i);
                 save__to__json(items, filename, key);
                 // Update summary values
                 ComputeDependentValues(items, filename, key.substr(0, key.find('.')));
-                // To avoid skipping the next entry after erase
                 --i;
                 continue;
             }

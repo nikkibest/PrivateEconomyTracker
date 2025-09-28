@@ -21,7 +21,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Personal Economy Tracker", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1440, 900, "Personal Economy Tracker", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
