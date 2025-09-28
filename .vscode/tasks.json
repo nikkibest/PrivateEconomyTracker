@@ -25,6 +25,26 @@
                     "args": ["/d", "/c"]
                 }
             }
+        },
+        {
+            "label": "Run PersonalEconomyTracker",
+            "type": "shell",
+            "options": { "cwd": "${workspaceFolder}/build" },
+            "command": "./PersonalEconomyTracker.exe",
+            "group": "none",
+            "detail": "Run PersonalEconomyTracker without debugging"
+            
+        },
+        {
+            "label": "BuildAndRun PersonalEconomyTracker",
+            "dependsOn": ["Build PersonalEconomyTracker", "Run PersonalEconomyTracker"],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "detail": "Build and then run PersonalEconomyTracker in one step"
         }
     ]
 }
+
