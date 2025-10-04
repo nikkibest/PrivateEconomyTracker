@@ -16,6 +16,7 @@ private:
     std::vector<BankBalance> bankBalance; 
     std::vector<Income> incomes;
     std::vector<Expense> expenses;
+    budget::BudgetManager budgetManager;
 };
 
 #endif // APP_H

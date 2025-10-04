@@ -12,6 +12,11 @@ struct BankBalance {
     int id = 0;
     std::string source;
     double amountNet;
+    bool operator==(const BankBalance& other) const {
+        return id == other.id &&
+               source == other.source &&
+               amountNet == other.amountNet;
+    }
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(BankBalance, id, source, amountNet);
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BankBalance, id, source, amountNet);
 };
@@ -61,20 +66,50 @@ inline std::vector<std::string> expenseTableOrder = {
     "source", "category", "person", "typeExpense", "typeAccount", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"
 };
 
+// Type trait to check if a type is a std::vector
+template<typename T>
+struct is_std_vector : std::false_type {};
+
+template<typename T, typename Alloc>
+struct is_std_vector<std::vector<T, Alloc>> : std::true_type {};
+
 // Save item to budget.json with nested keys using dot notation
 // Example: key = "expenses.expenses" will save to j["expenses"]["expenses"]
 // This function will create missing objects for intermediate keys if needed.
+
+// New version: save to history by date and status
 template<typename T>
-inline void save__to__json(const T& in, const std::string& filename, const std::string& key) {
+inline void save__to__json(const T& in, const std::string& filename, const std::string& key, const std::string& date, const std::string& status) {
     nlohmann::json j;
     std::ifstream file(filename);
     if (!file){
-        std::cerr << "[ERROR] load_from_json: File '" << filename << "' does not exist.\n";
+        std::cerr << "[ERROR] save__to__json: File '" << filename << "' does not exist.\n";
         std::cin.get();
         std::exit(EXIT_FAILURE);
     }
     file >> j;
     file.close();
+    if (!j.contains("history") || !j["history"].is_array()) j["history"] = nlohmann::json::array();
+    auto& history = j["history"];
+    // Find or create the entry for the given date
+    nlohmann::json* entry = nullptr;
+    for (auto& e : history) {
+        if (e.contains("date") && e["date"] == date) {
+            entry = &e;
+            break;
+        }
+    }
+    if (!entry) {
+        // Create new date object
+        nlohmann::json newEntry;
+        newEntry["date"] = date;
+        newEntry["status"] = status;
+        history.push_back(newEntry);
+        entry = &history.back();
+    } else {
+        // Update status
+        (*entry)["status"] = status;
+    }
     // Split key by '.' for nested access
     std::vector<std::string> keys;
     size_t start = 0, end = 0;
@@ -84,22 +119,37 @@ inline void save__to__json(const T& in, const std::string& filename, const std::
     }
     keys.push_back(key.substr(start));
     // Traverse or create nested objects for each key except the last
-    nlohmann::json* ptr = &j;
+    nlohmann::json* ptr = entry;
     for (size_t i = 0; i < keys.size() - 1; ++i) {
         if (!ptr->contains(keys[i]) || !(*ptr)[keys[i]].is_object()) {
             (*ptr)[keys[i]] = nlohmann::json::object(); // create if missing
         }
         ptr = &((*ptr)[keys[i]]);
     }
-    // Set the final key to the array
-    (*ptr)[keys.back()] = in;
+    // Set the final key to the value
+    // (*ptr)[keys.back()] = in;
+    // If the final key exists and is an array, append; else, create array and add
+    if constexpr (is_std_vector<T>::value) {
+        // Append each element to the array
+        if ((*ptr).contains(keys.back()) && (*ptr)[keys.back()].is_array()) {
+            for (const auto& item : in) {
+                (*ptr)[keys.back()].push_back(item);
+            }
+        } else {
+            (*ptr)[keys.back()] = nlohmann::json::array();
+            for (const auto& item : in) {
+                (*ptr)[keys.back()].push_back(item);
+            }
+        }
+    } else {
+        // Scalar: assign directly
+        (*ptr)[keys.back()] = in;
+    }
     std::ofstream out(filename);
     out << j.dump(4);
 }
 
-// Load item from budget.json with nested keys using dot notation
-// Example: key = "expenses.expenses" will load from j["expenses"]["expenses"]
-// This function will safely traverse the nested keys and only load if the final key is an array.
+
 // Helper for vector types
 template<typename T>
 void load_from_json_impl(std::vector<T>& out, nlohmann::json* ptr) {
@@ -119,8 +169,12 @@ void load_from_json_impl(T& out, nlohmann::json* ptr) {
     }
 }
 
+// Loads from the latest entry in history, or a specific date if provided (date == "" means latest)
+// template<typename T>
+
+// New: Merge history entries in ascending date order, applying changes, additions, and deletions
 template<typename T>
-inline void load_from_json(T& out, const std::string& filename, const std::string& key) {
+inline void load_from_json(T& out, const std::string& filename, const std::string& key, const std::string& date = "") {
     std::ifstream file(filename);
     if (!file){
         std::cerr << "[ERROR] load_from_json: File '" << filename << "' does not exist.\n";
@@ -130,6 +184,22 @@ inline void load_from_json(T& out, const std::string& filename, const std::strin
     nlohmann::json j;
     file >> j;
     file.close();
+    if (!j.contains("history") || !j["history"].is_array()) {
+        std::cerr << "[ERROR] load_from_json: No 'history' array in '" << filename << "'.\n";
+        std::cin.get();
+        std::exit(EXIT_FAILURE);
+    }
+    const auto& history = j["history"];
+    // Collect all entries with a date, sort by date ascending
+    std::vector<std::pair<std::string, const nlohmann::json*>> dated_entries;
+    for (const auto& e : history) {
+        if (e.contains("date") && e["date"].is_string()) {
+            if (date.empty() || e["date"].get<std::string>() <= date) {
+                dated_entries.emplace_back(e["date"].get<std::string>(), &e);
+            }
+        }
+    }
+    std::sort(dated_entries.begin(), dated_entries.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
     // Split key by '.' for nested access
     std::vector<std::string> keys;
     size_t start = 0, end = 0;
@@ -138,18 +208,56 @@ inline void load_from_json(T& out, const std::string& filename, const std::strin
         start = end + 1;
     }
     keys.push_back(key.substr(start));
-    // Traverse nested objects for each key
-    nlohmann::json* ptr = &j;
-    for (const auto& k : keys) {
-        if (ptr->contains(k)) {
-            ptr = &((*ptr)[k]);
-        } else {
-            std::cerr << "[ERROR] load_from_json: Key '" << key << "' does not exist in '" << filename << "'.\n";
-            std::cin.get();
-            std::exit(EXIT_FAILURE);
+    // Merge logic: start with oldest, apply changes as we go
+    nlohmann::json merged;
+    bool found_any = false;
+    for (const auto& pair : dated_entries) {
+        const nlohmann::json* candidate = pair.second;
+        const nlohmann::json* ptr = candidate;
+        bool valid = true;
+        for (const auto& k : keys) {
+            if (ptr->contains(k)) {
+                ptr = &((*ptr)[k]);
+            } else {
+                valid = false;
+                break;
+            }
         }
+        if (valid) {
+            // If this is the first found, copy it
+            if (!found_any) {
+                merged = *ptr;
+                found_any = true;
+            } else {
+                // Merge/patch: for arrays, replace by id; for objects, update fields
+                if (merged.is_array() && ptr->is_array()) {
+                    // Merge arrays by id (assume each item has an 'id' field)
+                    std::map<int, nlohmann::json> by_id;
+                    for (const auto& item : merged) {
+                        if (item.contains("id")) by_id[item["id"].get<int>()] = item;
+                    }
+                    for (const auto& item : *ptr) {
+                        if (item.contains("id")) by_id[item["id"].get<int>()] = item;
+                        else by_id[-1] = item; // fallback for items without id
+                    }
+                    merged = nlohmann::json::array();
+                    for (const auto& kv : by_id) merged.push_back(kv.second);
+                } else if (merged.is_object() && ptr->is_object()) {
+                    for (auto it = ptr->begin(); it != ptr->end(); ++it) {
+                        merged[it.key()] = it.value();
+                    }
+                } else {
+                    merged = *ptr;
+                }
+            }
+        }
+        // TODO: handle explicit deletions if you add deletion markers in the future
     }
-    load_from_json_impl(out, ptr);
+    if (found_any) {
+        load_from_json_impl(out, &merged);
+    } else {
+        out = T{};
+    }
 }
 
 /*

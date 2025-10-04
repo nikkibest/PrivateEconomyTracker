@@ -5,18 +5,135 @@
 #include <iostream>
 #define CHECKBOX_FLAG(flags, flag) ImGui::CheckboxFlags(#flag, (unsigned int*)&flags, flag)
 
+/* Add the status save feature*/
+
+/* The plot should highlight whether the historical data point is from a "confirmed" date or a "tentative" date.*/
+
+/* When updating a field with the same date and id, the system should update the existing entry rather than creating a duplicate.*/
+
+/* The table should not show values with 0 amount.*/
+
+/* The table could also show when the field was last modified based on the seleted date*/
+
+/* The Current Date Selection should be a slider that only slides over the possible dates */
+
 namespace budget {
-void ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) {    
-    static bool loaded = false;
-    if (!loaded) {
-        // Load incomes from file or initialize as needed
-        load_from_json(bankBalance, filename, "balance.balance");
-        loaded = true;
+// Helper to get today's date in YYYY-MM-DD format
+auto getToday = []() -> std::string {
+    time_t t = time(nullptr);
+    struct tm tm_buf;
+    localtime_s(&tm_buf, &t);
+    char buf[11];
+    strftime(buf, sizeof(buf), "%Y-%m-%d", &tm_buf);
+    return std::string(buf);
+};
+
+void BudgetManager::SelectDateUI(std::vector<std::string>& allDates, std::string& selectedDate, std::string& status, bool& loadedDates, bool& loadedData){
+    // Load all dates from budget.json
+    if (!loadedDates) {
+        allDates.clear();
+        std::ifstream file(filename);
+        if (file) {
+            nlohmann::json j;
+            file >> j;
+            if (j.contains("history") && j["history"].is_array()) {
+                for (const auto& entry : j["history"]) {
+                    if (entry.contains("date") && entry["date"].is_string()) {
+                        allDates.push_back(entry["date"].get<std::string>());
+                    }
+                }
+            }
+            std::sort(allDates.begin(), allDates.end(), [](const auto& a, const auto& b) { return a < b; }); // Sort dates ascending
+        }
+        loadedDates = true;
+    }
+    // Default selected date is today if not set
+    if (selectedDate.empty()) {
+        selectedDate = getToday();
+    }
+    // Date picker UI (combo + input)
+    ImGui::Text("Select Date:");
+    static char dateBuf[16] = "";
+    strncpy(dateBuf, selectedDate.c_str(), sizeof(dateBuf)-1);
+    dateBuf[sizeof(dateBuf)-1] = '\0';
+    static std::string prevSelectedDate = selectedDate;
+    if (ImGui::BeginCombo("##DateCombo", dateBuf)) {
+        for (const auto& d : allDates) {
+            bool is_selected = (selectedDate == d);
+            if (ImGui::Selectable(d.c_str(), is_selected)) {
+                selectedDate = d;
+                strncpy(dateBuf, d.c_str(), sizeof(dateBuf)-1);
+                dateBuf[sizeof(dateBuf)-1] = '\0';
+            }
+            if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    ImGui::Text("Current Date Selection");
+    if (ImGui::InputText("Select Date", dateBuf, sizeof(dateBuf))) {
+        selectedDate = std::string(dateBuf);
+    }
+    if (selectedDate != prevSelectedDate) {
+        loadedData = false;
+        prevSelectedDate = selectedDate;
+    }
+    // Find status for selected date (scan in ascending order, use last found)
+    status = "tentative";
+    std::vector<std::pair<std::string, std::string>> statusEntries;
+    std::ifstream file2(filename);
+    if (file2) {
+        nlohmann::json j;
+        file2 >> j;
+        if (j.contains("history") && j["history"].is_array()) {
+            for (const auto& entry : j["history"]) {
+                if (entry.contains("date") && entry["date"].is_string() && entry["date"] <= selectedDate && entry.contains("status")) {
+                    statusEntries.emplace_back(entry["date"].get<std::string>(), entry["status"].get<std::string>());
+                }
+            }
+        }
+    }
+    if (!statusEntries.empty()) {
+        // Sort by date ascending and use the last one
+        std::sort(statusEntries.begin(), statusEntries.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+        status = statusEntries.back().second;
+    }
+    // ImGui::Text("Status: %s", status.c_str());
+    if (status == "confirmed") {
+        ImGui::TextColored(ImVec4(0,1,0,1), "Status: %s", status.c_str());
+    } else if (status == "tentative") {
+        ImGui::TextColored(ImVec4(1,1,0,1), "Status: %s", status.c_str());
+    } else {
+        ImGui::TextColored(ImVec4(1,0,0,1), "Status: %s", status.c_str());
+    }
+}
+
+void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) {    
+    // --- Date Picker and Status UI ---
+    static std::vector<std::string> allNames;
+    static std::vector<std::string> allDates;
+    static std::string selectedDate;
+    static std::string status;
+    static bool loadedDates = false;
+    static bool loadedData = false;
+    SelectDateUI(allDates, selectedDate, status, loadedDates, loadedData);
+    // --- End Date Picker and Status UI ---
+    if (!loadedData) {
+        // Load bank balances for selected date
+        load_from_json(bankBalance, filename, "balance.balance", selectedDate);
+        loadedData = true;
+        double totalBalance = 0.0;
+        allNames.clear();
+        for (auto& b : bankBalance) {
+            totalBalance += b.amountNet;
+            allNames.push_back(b.source);
+        }
+        setTotalBalance(totalBalance);
     }
     static int editId = 0;
     static char source[64] = "";
     static float amount = 0.0f;
-    ImGui::Begin("Bank Balance");
+    // ImGui::Begin("Bank Balance");
     ImGui::Text("Add a new household bank balance here.");
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
     ImGui::InputFloat("Amount", &amount);
@@ -27,82 +144,98 @@ void ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) {
         strncpy(source, bal.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
         amount = static_cast<float>(bal.amountNet);
+        selectedDate = getToday();
     };
 
-    if (editId == 0) {
-        if (ImGui::Button("Add Bank Balance")) {
+    auto SetDeleteBalance = [&](const BankBalance& bal) {
+        editId = bal.id;
+        strncpy(source, bal.source.c_str(), sizeof(source) - 1);
+        source[sizeof(source) - 1] = '\0';
+        amount = 0.0f;
+        selectedDate = getToday();
+    };
+
+    if ((editId == 0) && !(std::find(allNames.begin(), allNames.end(), source) != allNames.end())) {
+        if (ImGui::Button("Add New Bank Balance")) {
             if (strlen(source) > 0 && amount > 0.0f) {
                 // Find the first unused positive integer ID
                 std::set<int> usedIds;
-                for (const auto& bal : bankBalance) {
+                std::vector<BankBalance> bankBalanceTmp = bankBalance;
+                load_from_json(bankBalanceTmp, filename, "balance.balance", "");
+                for (const auto& bal : bankBalanceTmp) {
                     usedIds.insert(bal.id);
                 }
                 int newId = 1;
-                while (usedIds.count(newId)) {
+                while (true) {
+                    if (usedIds.find(newId) == usedIds.end()) {
+                        break;
+                    }
                     ++newId;
                 }
-                bankBalance.push_back(BankBalance{
+                BankBalance newBalance{
                     newId,
                     std::string(source),
                     static_cast<double>(amount),
-                });
-                save__to__json(bankBalance, filename, "balance.balance");
+                };
+                std::vector<BankBalance> toSaveBalance = {newBalance};
+                save__to__json(toSaveBalance, filename, "balance.balance", selectedDate, "tentative");
                 source[0] = '\0';
                 amount = 0.0f;
-                // Update summary values
-                ComputeDependentValues(bankBalance, filename, "balance");
+                loadedData = false;
+                loadedDates = false; // Reload dates to include new date if added
             }
         }
     } else {
-        if (ImGui::Button("Save Changes")) {
-            if (strlen(source) > 0 && amount > 0.0f) {
-                for (auto& bal : bankBalance) {
-                    if (bal.id == editId) {
-                        bal.source = source;
-                        bal.amountNet = static_cast<double>(amount);
-                        break;
-                    }
-                }
-                save__to__json(bankBalance, filename, "balance.balance");
-                source[0] = '\0';
-                amount = 0.0f;
-                editId = 0;
-                ComputeDependentValues(bankBalance, filename, "balance");
-            }
+        if (ImGui::Button("Add Bank Balance Changes")) {
+            BankBalance newBalance{
+                editId,
+                std::string(source),
+                static_cast<double>(amount),
+            };
+            std::vector<BankBalance> toSaveBalance = {newBalance};
+            save__to__json(toSaveBalance, filename, "balance.balance", selectedDate, "tentative");
+            source[0] = '\0';
+            amount = 0.0f;
+            editId = 0;
+            loadedData = false;
+            loadedDates = false; // Reload dates to include new date if added
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel Editting")) {
+        if (ImGui::Button("Cancel Changes")) {
             source[0] = '\0';
             amount = 0.0f;
             editId = 0;
         }
     }
+    ImGui::SameLine();
+    if (ImGui::Button("Confirm This Bank Balance")) {
+        // save__to__json(bankBalance, filename, "balance.balance");
+    }
     
     ImGui::Separator();
     ImGui::Text("Summary of all Bank Balances:");
     if (ImGui::BeginTable("BankBalanceTableSummary", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
-        double totalBalance = 0.0;
-        load_from_json(totalBalance, "../budget.json", "balance.totalBalance");
         ImGui::TableSetupColumn("Total Bank Balance (DKK)");
         ImGui::TableHeadersRow();
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        ImGui::TextUnformatted(format_euro(totalBalance).c_str());
+        ImGui::TextUnformatted(format_euro(getTotalBalance()).c_str());
         ImGui::EndTable();
     }
 
     ImGui::Separator();
     ImGui::Text("All Bank Balances:");
-    CreateTable<BankBalance>("IncomeTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance", SetEditBalance);    
-    ImGui::End();
+    CreateTable<BankBalance>("IncomeTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance", SetEditBalance, SetDeleteBalance);    
+    ImGui::Separator();
+    // ImGui::End();
 }
 
-void ShowIncomeInput(std::vector<Income>& incomes) {    
+void BudgetManager::ShowIncomeInput(std::vector<Income>& incomes) {    
     static bool loaded = false;
     
     if (!loaded) {
         // Load incomes from file or initialize as needed
-        load_from_json(incomes, filename, "incomes.incomes");
+        load_from_json(incomes, filename, "incomes.incomes","");
         loaded = true;
     }
     // Static for editing
@@ -112,7 +245,7 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
     static float monthly = 0.0f;
     static float yearly = 0.0f;
     static float amount = 0.0f;
-    ImGui::Begin("Incomes");
+    // ImGui::Begin("Incomes");
     ImGui::Text("Add a new household income here.");
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
     ImGui::InputFloat("Nr. Annual Payments", &nrAnnualPayments);
@@ -151,14 +284,14 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
                     static_cast<double>(monthly),
                     static_cast<double>(yearly)
                 });
-                save__to__json(incomes, filename, "incomes.incomes");
+                //save__to__json(incomes, filename, "incomes.incomes");
                 source[0] = '\0';
                 nrAnnualPayments = 0.0f;
                 amount = 0.0f;
                 monthly = 0.0f;
                 yearly = 0.0f;
                 // Update summary values
-                ComputeDependentValues(incomes, filename, "incomes");
+                //ComputeDependentValues(incomes, filename, "incomes");
             }
         }
     } else {
@@ -176,14 +309,14 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
                         break;
                     }
                 }
-                save__to__json(incomes, filename, "incomes.incomes");
+                //save__to__json(incomes, filename, "incomes.incomes");
                 source[0] = '\0';
                 nrAnnualPayments = 0.0f;
                 amount = 0.0f;
                 monthly = 0.0f;
                 yearly = 0.0f;
                 editId = 0;
-                ComputeDependentValues(incomes, filename, "incomes");
+                //ComputeDependentValues(incomes, filename, "incomes");
             }
         }
         ImGui::SameLine();
@@ -201,8 +334,8 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
     ImGui::Text("Summary of all Incomes:");
     if (ImGui::BeginTable("IncomeTableSummary", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
         double totalYearly = 0.0, avgMonthly = 0.0;
-        load_from_json(totalYearly, "../budget.json", "incomes.totalYearly");
-        load_from_json(avgMonthly, "../budget.json", "incomes.avgMonthly");
+        load_from_json(totalYearly, "../budget.json", "incomes.totalYearly", "");
+        load_from_json(avgMonthly, "../budget.json", "incomes.avgMonthly", "");
 
         ImGui::TableSetupColumn("Total Yearly (DKK)");
         ImGui::TableSetupColumn("Avg. Monthly (DKK)");
@@ -217,32 +350,24 @@ void ShowIncomeInput(std::vector<Income>& incomes) {
 
     ImGui::Separator();
     ImGui::Text("All Incomes:");
-    CreateTable<Income>("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes", SetEditIncome);    
-    ImGui::End();
+    CreateTable<Income>("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes", SetEditIncome, nullptr);    
+    ImGui::Separator();
+    // ImGui::End();
 }
 
 template<typename T>
-void ComputeDependentValues(std::vector<T>& items, const std::string filename, const std::string keyStart) {
-    if constexpr (std::is_same_v<T, BankBalance>) {
-        // Update summary value for BankBalance
-        double totalBalance = 0.0;
-        for (const auto& item : items) {
-            totalBalance += item.amountNet; // Use the correct member
-        }
-        save__to__json(totalBalance, filename, keyStart+".totalBalance");
-    } else {
-        // Update summary values for Income or Expense
-        double totalYearly = 0.0;
-        for (const auto& item : items) {
-            totalYearly += item.amountNet_year;
-        }
-        double avgMonthly = totalYearly / 12.0f;
-        save__to__json(totalYearly, filename, keyStart+".totalYearly");
-        save__to__json(avgMonthly, filename, keyStart+".avgMonthly");
+void BudgetManager::ComputeDependentValues(std::vector<T>& items, const std::string filename, const std::string keyStart, const std::string& date, const std::string& status) {
+    // Update summary values for Income or Expense
+    double totalYearly = 0.0;
+    for (const auto& item : items) {
+        totalYearly += item.amountNet_year;
     }
+    double avgMonthly = totalYearly / 12.0f;
+    //save__to__json(totalYearly, filename, keyStart+".totalYearly");
+    //save__to__json(avgMonthly, filename, keyStart+".avgMonthly");
 }
 
-void ShowExpenseInput(std::vector<Expense>& expenses) {
+void BudgetManager::ShowExpenseInput(std::vector<Expense>& expenses) {
     // UI state variables for categories and persons
     static std::vector<std::string> categories;
     static bool isLoadedCategories = false;
@@ -290,24 +415,32 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
         yearly = static_cast<float>(exp.amountNet_year);
     };
     // ...existing code...
-    ImGui::Begin("Expenses");
+    // ImGui::Begin("Expenses");
     ImGui::Text("Add a new household expense here.");
     static bool loaded = false;
     if (!loaded) {
-        load_from_json(expenses, filename, "expenses.expenses");
+        load_from_json(expenses, filename, "expenses.expenses", "");
         loaded = true;
     }
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
     // Categories
     extension = "expenses.categories";
-    budget::CreateComboWithDeleteAndAdd(categories, isLoadedCategories, idxSelectedCategory, "category", filename, extension, newCategory);
-    strncpy(category, categories[idxSelectedCategory].c_str(), sizeof(category) - 1);
-    category[sizeof(category) - 1] = '\0';
+    CreateComboWithDeleteAndAdd(categories, isLoadedCategories, idxSelectedCategory, "category", filename, extension, newCategory);
+    if (!categories.empty() && idxSelectedCategory >= 0 && idxSelectedCategory < (int)categories.size()) {
+        strncpy(category, categories[idxSelectedCategory].c_str(), sizeof(category) - 1);
+        category[sizeof(category) - 1] = '\0';
+    } else {
+        category[0] = '\0';
+    }
     // Persons
     extension = "persons";
-    budget::CreateComboWithDeleteAndAdd(persons, isLoadedPersons, idxSelectedPerson, "person", filename, extension, newPerson);
-    strncpy(person, persons[idxSelectedPerson].c_str(), sizeof(person) - 1);
-    person[sizeof(person) - 1] = '\0';
+    CreateComboWithDeleteAndAdd(persons, isLoadedPersons, idxSelectedPerson, "person", filename, extension, newPerson);
+    if (!persons.empty() && idxSelectedPerson >= 0 && idxSelectedPerson < (int)persons.size()) {
+        strncpy(person, persons[idxSelectedPerson].c_str(), sizeof(person) - 1);
+        person[sizeof(person) - 1] = '\0';
+    } else {
+        person[0] = '\0';
+    }
     // Must/Expenditure Combo
     ImGui::Combo("Expense Type", &mustExpenditureIdx, mustExpenditureOptions, IM_ARRAYSIZE(mustExpenditureOptions));
     strncpy(typeExpense, mustExpenditureOptions[mustExpenditureIdx], sizeof(typeExpense) - 1);
@@ -345,14 +478,14 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
                     static_cast<double>(monthly),
                     static_cast<double>(yearly)
                 });
-                save__to__json(expenses, filename, "expenses.expenses");
+                //save__to__json(expenses, filename, "expenses.expenses");
                 source[0] = '\0';
                 nrAnnualPayments = 0.0f;
                 amount = 0.0f;
                 monthly = 0.0f;
                 yearly = 0.0f;
                 // Update summary values
-                ComputeDependentValues(expenses, filename, "expenses");
+                //ComputeDependentValues(expenses, filename, "expenses");
             }
         }
     } else {
@@ -374,14 +507,14 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
                         break;
                     }
                 }
-                save__to__json(expenses, filename, "expenses.expenses");
+                //save__to__json(expenses, filename, "expenses.expenses");
                 source[0] = '\0';
                 nrAnnualPayments = 0.0f;
                 amount = 0.0f;
                 monthly = 0.0f;
                 yearly = 0.0f;
                 editId = 0;
-                ComputeDependentValues(expenses, filename, "expenses");
+                //ComputeDependentValues(expenses, filename, "expenses");
             }
         }
         ImGui::SameLine();
@@ -399,8 +532,8 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
     ImGui::Text("Summary of all Expenses:");
     if (ImGui::BeginTable("ExpenseTableSummary", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
         double totalYearly = 0.0, avgMonthly = 0.0;
-        load_from_json(totalYearly, "../budget.json", "expenses.totalYearly");
-        load_from_json(avgMonthly, "../budget.json", "expenses.avgMonthly");
+        load_from_json(totalYearly, "../budget.json", "expenses.totalYearly", "");
+        load_from_json(avgMonthly, "../budget.json", "expenses.avgMonthly", "");
 
         ImGui::TableSetupColumn("Total Yearly (DKK)");
         ImGui::TableSetupColumn("Avg. Monthly (DKK)");
@@ -415,11 +548,12 @@ void ShowExpenseInput(std::vector<Expense>& expenses) {
     }
     ImGui::Separator();
     ImGui::Text("All Expenses:");
-    CreateTable<Expense>("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses", SetEditExpense);
-    ImGui::End();
+    CreateTable<Expense>("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses", SetEditExpense, nullptr);
+    ImGui::Separator();
+    // ImGui::End();
 }
 
-void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem)
+void BudgetManager::CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem)
 {
     if (extension.empty()) {
         std::cerr << "[ERROR] CreateComboWithDeleteAndAdd: extension key is empty for label '" << label << "'." << std::endl;
@@ -432,7 +566,7 @@ void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded,
     if (!isLoaded) {
         // Load categories from expenses.json file
         isLoaded = true;   
-        load_from_json(item, filename, extension);
+        load_from_json(item, filename, extension,"");
     }
     std::string btnLabel;
     // Combo selection for categor
@@ -456,7 +590,7 @@ void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded,
             item.erase(item.begin() + selectedIndex);
             if (selectedIndex >= static_cast<int>(item.size()))
                 selectedIndex = static_cast<int>(item.size()) - 1;
-            save__to__json(item, filename, extension);
+            //save__to__json(item, filename, extension);
             isLoaded = false; // Force reload to update the combo
         }
         ImGui::SameLine();
@@ -475,13 +609,13 @@ void CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded,
         item.push_back(std::string(newItem));
         selectedIndex = static_cast<int>(item.size()) - 1;
         newItem[0] = '\0';
-        save__to__json(item, filename, extension);
+        //save__to__json(item, filename, extension);
         isLoaded = false; // Force reload to update the combo
     }
 }
 
 template<typename T>
-void CreateTable(const char* tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::function<void(const T&)> editCallback) {
+void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::function<void(const T&)> editCallback, std::function<void(const T&)> deleteCallback) {
     // Add an extra column for Edit button
     if (ImGui::BeginTable(tableName, tableHeaders.size() + 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
         for (int i = 0; i < tableHeaders.size(); ++i) {
@@ -515,12 +649,8 @@ void CreateTable(const char* tableName, std::vector<T>& items, const std::vector
             // Add a delete button in a new column
             ImGui::TableSetColumnIndex(tableHeaders.size()+1);
             std::string btnLabel = "Delete##" + std::to_string(i);
-            if (ImGui::Button(btnLabel.c_str())) {
-                items.erase(items.begin() + i);
-                save__to__json(items, filename, key);
-                // Update summary values
-                ComputeDependentValues(items, filename, key.substr(0, key.find('.')));
-                --i;
+            if (deleteCallback && ImGui::Button(btnLabel.c_str())) {
+                deleteCallback(item);
                 continue;
             }
         }
@@ -528,7 +658,7 @@ void CreateTable(const char* tableName, std::vector<T>& items, const std::vector
     }
 }
 
-void PlotBudget(const std::vector<Expense>& expenses, const std::vector<Income>& incomes) 
+void BudgetManager::PlotBudget(const std::vector<Expense>& expenses, const std::vector<Income>& incomes) 
 {
     ImGui::Begin("Budget Visualsation");
     ImGui::Text("Here, the Savings, Incomes and Expenses are visualized over a selected Time Horizon, Pay Raise and Inflation Rate.");
@@ -551,12 +681,49 @@ void PlotBudget(const std::vector<Expense>& expenses, const std::vector<Income>&
     std::vector<double> cumulativeIncomes(months, 0.0);
     std::vector<double> cumulativeDifference(months, 0.0);
     std::vector<double> cumulativeBalance(months, 0.0);
+    // Load historical balances
+    std::vector<std::string> allBalanceDates;
+    std::vector<double> balanceTimesHistory;
+    std::vector<double> balanceAmountHistory;
+    std::vector<BankBalance> bankBalanceTmp;
+    int nHistBalances = 0;
+    // Load JSON
+    std::ifstream file("../budget.json");
+    nlohmann::json j;
+    file >> j;
+    if (j.contains("history") && j["history"].is_array()) {
+        for (const auto& entry : j["history"]) {
+            if (entry.contains("date") && entry.contains("balance") && entry["balance"].contains("balance")) {
+                std::string date = entry["date"];
+                allBalanceDates.push_back(date);
+            }
+        }
+    }
+    std::sort(allBalanceDates.begin(), allBalanceDates.end(), [](const auto& a, const auto& b) { return a < b; });
+    // Convert allBalanceDates to time_t
+    for (const auto& dateStr : allBalanceDates) {
+        load_from_json(bankBalanceTmp, filename, "balance.balance", dateStr);
+        double totalBalance = 0.0;
+        for (const auto& b : bankBalanceTmp) {
+            totalBalance += b.amountNet;
+        }
+        balanceAmountHistory.push_back(totalBalance);
+        // Convert date string "YYYY-MM-DD" to time_t
+        std::tm tm = {};
+        std::istringstream ss(dateStr);
+        ss >> std::get_time(&tm, "%Y-%m-%d");
+        time_t t = mktime(&tm);
+        balanceTimesHistory.push_back(static_cast<double>(t));
+        // Increment counter
+        nHistBalances++;
+    }
+
     static double now = (double)time(nullptr);
     std::vector<double> time(months, 0.0);
     double monthlyAvgExpense, monthlyAvgIncome, totalBalance;
-    load_from_json(totalBalance, "../budget.json", "balance.totalBalance");
-    load_from_json(monthlyAvgExpense, "../budget.json", "expenses.avgMonthly");
-    load_from_json(monthlyAvgIncome, "../budget.json", "incomes.avgMonthly");
+    totalBalance = getTotalBalance();
+    load_from_json(monthlyAvgExpense, "../budget.json", "expenses.avgMonthly", "");
+    load_from_json(monthlyAvgIncome, "../budget.json", "incomes.avgMonthly", "");
 
     // Display current total balance
     ImGui::Text("Current Total Bank Balance: %s DKK", format_euro(totalBalance).c_str());
@@ -641,21 +808,27 @@ void PlotBudget(const std::vector<Expense>& expenses, const std::vector<Income>&
             
             // Compute min and max
             static double minY, maxY, range, margin;
-            maxY = *std::max_element(allCumulativeValues.begin(), allCumulativeValues.end());
-            minY = *std::min_element(allCumulativeValues.begin(), allCumulativeValues.end());
+            // Compute min/max for allCumulativeValues and balanceAmountHistory
+            double minCumulative = *std::min_element(allCumulativeValues.begin(), allCumulativeValues.end());
+            double maxCumulative = *std::max_element(allCumulativeValues.begin(), allCumulativeValues.end());
+            double minHistory = balanceAmountHistory.empty() ? minCumulative : *std::min_element(balanceAmountHistory.begin(), balanceAmountHistory.end());
+            double maxHistory = balanceAmountHistory.empty() ? maxCumulative : *std::max_element(balanceAmountHistory.begin(), balanceAmountHistory.end());
+            minY = std::min(minCumulative, minHistory);
+            maxY = std::max(maxCumulative, maxHistory);
             range = maxY - minY;
             margin = range * 0.05;
             ImPlot::SetupAxisLimits(ImAxis_Y1, 0, maxY + margin, ImPlotCond_Always);
             ImPlot::SetupAxisFormat(ImAxis_Y1, format_euro_implot);
             // Set x-axis limits to fit the selected months
             if (months > 0) {
-                ImPlot::SetupAxisLimits(ImAxis_X1, time.front(), time.back(), ImPlotCond_Always);
+                ImPlot::SetupAxisLimits(ImAxis_X1, balanceTimesHistory.empty() ? time.front() : balanceTimesHistory.front(), time.back(), ImPlotCond_Always);
             }
             
             ImPlot::PlotLine("Cumulative Incomes", time.data(), cumulativeIncomes.data(), months);
             ImPlot::PlotLine("Cumulative Expenses", time.data(), cumulativeExpenses.data(), months);
             ImPlot::PlotLine("Cumulative Difference", time.data(), cumulativeDifference.data(), months);
             ImPlot::PlotLine("Balance Over Time", time.data(), cumulativeBalance.data(), months);
+            ImPlot::PlotLine("Historical Balance", balanceTimesHistory.data(), balanceAmountHistory.data(), nHistBalances);
             
             // Add marker for target value
             if (targetValue > 0.0 && surpassIdx != -1) {

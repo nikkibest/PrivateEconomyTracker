@@ -29,7 +29,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "BuildAndRun PersonalEconomyTracker"
+            "preLaunchTask": "Build PersonalEconomyTracker"
         }
     ]
 }

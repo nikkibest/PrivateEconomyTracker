@@ -86,19 +86,28 @@ void App::render() {
     }
 
     // Enter application code here
-    // Enter current cash amount
-    budget::ShowBankBalanceInput(bankBalance);
-    budget::ShowIncomeInput(incomes);
-    budget::ShowExpenseInput(expenses);
+    ImGui::Begin("Budget");
+    if (ImGui::TreeNodeEx("Bank Balance", ImGuiTreeNodeFlags_DefaultOpen)) {
+        budgetManager.ShowBankBalanceInput(bankBalance);
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNodeEx("Incomes")) {
+        budgetManager.ShowIncomeInput(incomes);
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNodeEx("Expenses")) {
+        budgetManager.ShowExpenseInput(expenses);
+        ImGui::TreePop();
+        }
+    ImGui::End(); // End Budget window
     // Visualize savings, income and expenses and future expectations
-    budget::PlotBudget(expenses, incomes);
+    budgetManager.PlotBudget(expenses, incomes);
     // Visualize Rich Dad Poor Dad Income Statement/Balance Sheet
-    richDadPoorDad::DrawRichDadDiagram(incomes, expenses);
-
-
+    // richDadPoorDad::DrawRichDadDiagram(incomes, expenses);
+    
     ImGui::End();        // End DockSpace window
-    ImGui::ShowDemoWindow();
-    ImPlot::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
+    // ImPlot::ShowDemoWindow();
     
 }
 
