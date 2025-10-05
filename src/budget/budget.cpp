@@ -1,13 +1,12 @@
 #include "budget.h"
-#include "imgui.h"
-#include "implot.h"
+
 #include <set>
 #include <iostream>
 #define CHECKBOX_FLAG(flags, flag) ImGui::CheckboxFlags(#flag, (unsigned int*)&flags, flag)
 
-/* Add the status save feature*/
-
 /* The plot should highlight whether the historical data point is from a "confirmed" date or a "tentative" date.*/
+
+/* Add the status save feature*/
 
 /* When updating a field with the same date and id, the system should update the existing entry rather than creating a duplicate.*/
 
@@ -17,10 +16,28 @@
 
 /* The Current Date Selection should be a slider that only slides over the possible dates */
 
+/* Update Incomes and Expenses correspondingly */
+
 namespace budget {
+BudgetManager::BudgetManager()
+    : balanceState(), months(12)
+{
+    loadBalanceData();
+    setMonths(months);
+}
+
 // Helper to get today's date in YYYY-MM-DD format
 auto getToday = []() -> std::string {
     time_t t = time(nullptr);
+    struct tm tm_buf;
+    localtime_s(&tm_buf, &t);
+    char buf[11];
+    strftime(buf, sizeof(buf), "%Y-%m-%d", &tm_buf);
+    return std::string(buf);
+};
+
+auto getDateStr = [](double time) -> std::string {
+    time_t t = (time_t)time;
     struct tm tm_buf;
     localtime_s(&tm_buf, &t);
     char buf[11];
@@ -108,27 +125,65 @@ void BudgetManager::SelectDateUI(std::vector<std::string>& allDates, std::string
     }
 }
 
-void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) {    
-    // --- Date Picker and Status UI ---
-    static std::vector<std::string> allNames;
-    static std::vector<std::string> allDates;
-    static std::string selectedDate;
-    static std::string status;
-    static bool loadedDates = false;
-    static bool loadedData = false;
-    SelectDateUI(allDates, selectedDate, status, loadedDates, loadedData);
-    // --- End Date Picker and Status UI ---
-    if (!loadedData) {
-        // Load bank balances for selected date
-        load_from_json(bankBalance, filename, "balance.balance", selectedDate);
-        loadedData = true;
-        double totalBalance = 0.0;
-        allNames.clear();
-        for (auto& b : bankBalance) {
-            totalBalance += b.amountNet;
-            allNames.push_back(b.source);
+void BudgetManager::loadBalanceData() {
+    // Load bank balances for selected date
+    load_from_json(bankBalance, filename, "balance.balance", balanceState.selectedDate);
+    setTotalBalanceTable(0.0);
+    balanceState.allNames.clear();
+    for (auto& b : bankBalance) {
+        setTotalBalanceTable(getTotalBalanceTable() + b.amountNet);
+        balanceState.allNames.push_back(b.source);
+    }
+
+    // Get all historical dates and corresponding total balances for plot
+    balanceDatesHist.clear();
+    balanceAmountHistory.clear();
+    balanceTimesHistory.clear();
+    nHistBalances = 0;
+    std::ifstream file("../budget.json");
+    nlohmann::json j;
+    file >> j;
+    if (j.contains("history") && j["history"].is_array()) {
+        for (const auto& entry : j["history"]) {
+            if (entry.contains("date") && entry.contains("balance") && entry["balance"].contains("balance")) {
+                std::string date = entry["date"];
+                balanceDatesHist.push_back(date);
+            }
         }
-        setTotalBalance(totalBalance);
+    }
+    std::sort(balanceDatesHist.begin(), balanceDatesHist.end(), [](const auto& a, const auto& b) { return a < b; });
+    // Convert balanceDatesHist to time_t
+    for (const auto& dateStr : balanceDatesHist) {
+        load_from_json(bankBalanceHist, filename, "balance.balance", dateStr);
+        double totalBalanceTmp = 0.0;
+        for (const auto& b : bankBalanceHist) {
+            totalBalanceTmp += b.amountNet;
+        }
+        balanceAmountHistory.push_back(totalBalanceTmp);
+        // Convert date string "YYYY-MM-DD" to time_t
+        std::tm tm = {};
+        std::istringstream ss(dateStr);
+        ss >> std::get_time(&tm, "%Y-%m-%d");
+        time_t t = mktime(&tm);
+        balanceTimesHistory.push_back(static_cast<double>(t));
+        // Increment counter
+        nHistBalances++;
+    }
+    balanceState.loadedData = true;
+}
+
+void BudgetManager::ShowBankBalanceInput() {    
+    // --- Date Picker and Status UI ---
+    // static std::vector<std::string> allNames;
+    // static std::vector<std::string> allDates;
+    // static std::string selectedDate;
+    // static std::string status;
+    // static bool loadedDates = false;
+    // static bool loadedData = true;
+    SelectDateUI(balanceState.allDates, balanceState.selectedDate, balanceState.status, balanceState.loadedDates, balanceState.loadedData);
+    // --- End Date Picker and Status UI ---
+    if (!balanceState.loadedData) {
+        loadBalanceData();
     }
     static int editId = 0;
     static char source[64] = "";
@@ -144,7 +199,7 @@ void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) 
         strncpy(source, bal.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
         amount = static_cast<float>(bal.amountNet);
-        selectedDate = getToday();
+        balanceState.selectedDate = getToday();
     };
 
     auto SetDeleteBalance = [&](const BankBalance& bal) {
@@ -152,17 +207,17 @@ void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) 
         strncpy(source, bal.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
         amount = 0.0f;
-        selectedDate = getToday();
+        balanceState.selectedDate = getToday();
     };
 
-    if ((editId == 0) && !(std::find(allNames.begin(), allNames.end(), source) != allNames.end())) {
+    if ((editId == 0) && !(std::find(balanceState.allNames.begin(), balanceState.allNames.end(), source) != balanceState.allNames.end())) {
         if (ImGui::Button("Add New Bank Balance")) {
             if (strlen(source) > 0 && amount > 0.0f) {
                 // Find the first unused positive integer ID
                 std::set<int> usedIds;
-                std::vector<BankBalance> bankBalanceTmp = bankBalance;
-                load_from_json(bankBalanceTmp, filename, "balance.balance", "");
-                for (const auto& bal : bankBalanceTmp) {
+                std::vector<BankBalance> bankBalanceHist = bankBalance;
+                load_from_json(bankBalanceHist, filename, "balance.balance", "");
+                for (const auto& bal : bankBalanceHist) {
                     usedIds.insert(bal.id);
                 }
                 int newId = 1;
@@ -178,11 +233,11 @@ void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) 
                     static_cast<double>(amount),
                 };
                 std::vector<BankBalance> toSaveBalance = {newBalance};
-                save__to__json(toSaveBalance, filename, "balance.balance", selectedDate, "tentative");
+                save__to__json(toSaveBalance, filename, "balance.balance", balanceState.selectedDate, "tentative");
                 source[0] = '\0';
                 amount = 0.0f;
-                loadedData = false;
-                loadedDates = false; // Reload dates to include new date if added
+                balanceState.loadedData = false;
+                balanceState.loadedDates = false; // Reload dates to include new date if added
             }
         }
     } else {
@@ -193,12 +248,12 @@ void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) 
                 static_cast<double>(amount),
             };
             std::vector<BankBalance> toSaveBalance = {newBalance};
-            save__to__json(toSaveBalance, filename, "balance.balance", selectedDate, "tentative");
+            save__to__json(toSaveBalance, filename, "balance.balance", balanceState.selectedDate, "tentative");
             source[0] = '\0';
             amount = 0.0f;
             editId = 0;
-            loadedData = false;
-            loadedDates = false; // Reload dates to include new date if added
+            balanceState.loadedData = false;
+            balanceState.loadedDates = false; // Reload dates to include new date if added
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel Changes")) {
@@ -219,7 +274,7 @@ void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) 
         ImGui::TableHeadersRow();
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        ImGui::TextUnformatted(format_euro(getTotalBalance()).c_str());
+        ImGui::TextUnformatted(format_euro(getTotalBalanceTable()).c_str());
         ImGui::EndTable();
     }
 
@@ -230,7 +285,7 @@ void BudgetManager::ShowBankBalanceInput(std::vector<BankBalance>& bankBalance) 
     // ImGui::End();
 }
 
-void BudgetManager::ShowIncomeInput(std::vector<Income>& incomes) {    
+void BudgetManager::ShowIncomeInput() {    
     static bool loaded = false;
     
     if (!loaded) {
@@ -367,7 +422,7 @@ void BudgetManager::ComputeDependentValues(std::vector<T>& items, const std::str
     //save__to__json(avgMonthly, filename, keyStart+".avgMonthly");
 }
 
-void BudgetManager::ShowExpenseInput(std::vector<Expense>& expenses) {
+void BudgetManager::ShowExpenseInput() {
     // UI state variables for categories and persons
     static std::vector<std::string> categories;
     static bool isLoadedCategories = false;
@@ -658,7 +713,7 @@ void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, co
     }
 }
 
-void BudgetManager::PlotBudget(const std::vector<Expense>& expenses, const std::vector<Income>& incomes) 
+void BudgetManager::PlotBudget() 
 {
     ImGui::Begin("Budget Visualsation");
     ImGui::Text("Here, the Savings, Incomes and Expenses are visualized over a selected Time Horizon, Pay Raise and Inflation Rate.");
@@ -666,94 +721,25 @@ void BudgetManager::PlotBudget(const std::vector<Expense>& expenses, const std::
     ImGui::Separator();
     // Slider for months
     ImGui::Text("Select Time Horizon, Pay Raise and Inflation Rate:");
-    static int months = 12;
-    ImGui::SliderInt("Time Horizon (Months)", &months, 1, 10*12);
-    static int payRaiseRate = 2;
-    ImGui::SliderInt("Pay Raise Rate (%/year)", &payRaiseRate, 0, 10);
-    static int inflationRate = 2;
-    ImGui::SliderInt("Inflation Rate (%/year)", &inflationRate, 0, 10);
+    static int monthsTmp = getMonths();
+    if (ImGui::SliderInt("Time Horizon (Months)", &monthsTmp, 1, 10*12)) {setMonths(monthsTmp); updateMonthlyPlotValues();}
+    if (ImGui::SliderInt("Pay Raise Rate (%/year)", &payRaiseRate, 0, 10)) {updateMonthlyPlotValues();}
+    if (ImGui::SliderInt("Inflation Rate (%/year)", &inflationRate, 0, 10)) {updateMonthlyPlotValues();}
 
-    // Dynamically allocate arrays based on months
-    std::vector<double> monthlyExpenses(months, 0.0);
-    std::vector<double> monthlyIncomes(months, 0.0);
-    std::vector<double> monthlyBalance(months, 0.0);
-    std::vector<double> cumulativeExpenses(months, 0.0);
-    std::vector<double> cumulativeIncomes(months, 0.0);
-    std::vector<double> cumulativeDifference(months, 0.0);
-    std::vector<double> cumulativeBalance(months, 0.0);
-    // Load historical balances
-    std::vector<std::string> allBalanceDates;
-    std::vector<double> balanceTimesHistory;
-    std::vector<double> balanceAmountHistory;
-    std::vector<BankBalance> bankBalanceTmp;
-    int nHistBalances = 0;
-    // Load JSON
-    std::ifstream file("../budget.json");
-    nlohmann::json j;
-    file >> j;
-    if (j.contains("history") && j["history"].is_array()) {
-        for (const auto& entry : j["history"]) {
-            if (entry.contains("date") && entry.contains("balance") && entry["balance"].contains("balance")) {
-                std::string date = entry["date"];
-                allBalanceDates.push_back(date);
-            }
-        }
+    if (monthlyAvgExpense == 0.0) {
+        load_from_json(monthlyAvgExpense, "../budget.json", "expenses.avgMonthly", "");
+        load_from_json(monthlyAvgIncome, "../budget.json", "incomes.avgMonthly", "");
+        updateMonthlyPlotValues();
     }
-    std::sort(allBalanceDates.begin(), allBalanceDates.end(), [](const auto& a, const auto& b) { return a < b; });
-    // Convert allBalanceDates to time_t
-    for (const auto& dateStr : allBalanceDates) {
-        load_from_json(bankBalanceTmp, filename, "balance.balance", dateStr);
-        double totalBalance = 0.0;
-        for (const auto& b : bankBalanceTmp) {
-            totalBalance += b.amountNet;
-        }
-        balanceAmountHistory.push_back(totalBalance);
-        // Convert date string "YYYY-MM-DD" to time_t
-        std::tm tm = {};
-        std::istringstream ss(dateStr);
-        ss >> std::get_time(&tm, "%Y-%m-%d");
-        time_t t = mktime(&tm);
-        balanceTimesHistory.push_back(static_cast<double>(t));
-        // Increment counter
-        nHistBalances++;
-    }
-
-    static double now = (double)time(nullptr);
-    std::vector<double> time(months, 0.0);
-    double monthlyAvgExpense, monthlyAvgIncome, totalBalance;
-    totalBalance = getTotalBalance();
-    load_from_json(monthlyAvgExpense, "../budget.json", "expenses.avgMonthly", "");
-    load_from_json(monthlyAvgIncome, "../budget.json", "incomes.avgMonthly", "");
 
     // Display current total balance
-    ImGui::Text("Current Total Bank Balance: %s DKK", format_euro(totalBalance).c_str());
-    // Input field for target value
+    ImGui::Text("Current Total Bank Balance: %s DKK", format_euro(balanceAmountHistory.back()).c_str());
     ImGui::Text("Set a Target Amount (DKK) and see when it's reached:");
-    static double targetValue = 1000000.0;
     ImGui::InputDouble("Target Amount (DKK)", &targetValue, 10000.0, 1000000.0, "%.0f");
 
-    int surpassIdx = -1;
-    for (int i = 0; i < months; ++i) {
-        monthlyExpenses     [i]   = monthlyAvgExpense;
-        monthlyIncomes      [i]   = monthlyAvgIncome;
-        monthlyBalance      [i]   = monthlyAvgIncome-monthlyAvgExpense;
-        cumulativeExpenses  [i]   = monthlyAvgExpense * (i);
-        cumulativeIncomes   [i]   = monthlyAvgIncome * (i);
-        cumulativeDifference[i]   = cumulativeIncomes[i] - cumulativeExpenses[i];
-        cumulativeBalance   [i]   = totalBalance + cumulativeDifference[i];
-        time[i] = now + i * 30.0 * 24.0 * 3600.0; // Approximate month as 30 days
-        if (i%12==0 && i!=0) {
-            // Apply inflation adjustment at the end of each year
-            monthlyAvgExpense *= (1.0 + inflationRate / 100.0);
-            monthlyAvgIncome  *= (1.0 + payRaiseRate / 100.0);
-        }
-        if (surpassIdx == -1 && cumulativeBalance[i] >= targetValue) {
-            surpassIdx = i;
-        }
-    }
     // Show date when cumulativeBalance surpasses targetValue
-    if (targetValue > 0.0 && surpassIdx != -1) {
-        time_t t = (time_t)time[surpassIdx];
+    if (targetValue > 0.0 && surpassTargetIdx != -1) {
+        time_t t = (time_t)timeMonths[surpassTargetIdx];
         struct tm* tm_info = localtime(&t);
         char dateStr[32];
         strftime(dateStr, sizeof(dateStr), "%d-%m-%Y", tm_info);
@@ -770,28 +756,12 @@ void BudgetManager::PlotBudget(const std::vector<Expense>& expenses, const std::
         if (ImPlot::BeginPlot("Expenses and Incomes")) {
             ImPlot::SetupAxisScale(ImAxis_X1, ImPlotScale_Time);
             ImPlot::SetupAxis(ImAxis_Y1, "Amount (DKK)");
-
-            // Combine both vectors
-            std::vector<double> allMonthlyValues;
-            allMonthlyValues.reserve(monthlyExpenses.size() + monthlyIncomes.size() + monthlyBalance.size());
-            allMonthlyValues.insert(allMonthlyValues.end(), monthlyExpenses.begin(), monthlyExpenses.end());
-            allMonthlyValues.insert(allMonthlyValues.end(), monthlyIncomes.begin(), monthlyIncomes.end());
-            allMonthlyValues.insert(allMonthlyValues.end(), monthlyBalance.begin(), monthlyBalance.end());
-            
-            // Compute min and max
-            static double maxY, range, margin;
-            maxY = *std::max_element(allMonthlyValues.begin(), allMonthlyValues.end());
-            range = maxY - 0;
-            margin = range * 0.05;
-            ImPlot::SetupAxisLimits(ImAxis_Y1, 0, maxY + margin, ImPlotCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_Y1, 0, p1.Ymax + p1.Ymargin, ImPlotCond_Always);
             ImPlot::SetupAxisFormat(ImAxis_Y1, format_euro_implot);
-            // Set x-axis limits to fit the selected months
-            if (months > 0) {
-                ImPlot::SetupAxisLimits(ImAxis_X1, time.front(), time.back(), ImPlotCond_Always);
-            }
-            ImPlot::PlotLine("Incomes", time.data(), monthlyIncomes.data(), months);
-            ImPlot::PlotLine("Expenses", time.data(), monthlyExpenses.data(), months);
-            ImPlot::PlotLine("Difference", time.data(), monthlyBalance.data(), months);
+            ImPlot::SetupAxisLimits(ImAxis_X1, timeMonths.front(), timeMonths.back(), ImPlotCond_Always);
+            ImPlot::PlotLine("Incomes"   , timeMonths.data(), monthlyIncomes.data(), months);
+            ImPlot::PlotLine("Expenses"  , timeMonths.data(), monthlyExpenses.data(), months);
+            ImPlot::PlotLine("Difference", timeMonths.data(), monthlyBalance.data(), months);
             ImPlot::EndPlot();
             
         }
@@ -799,47 +769,36 @@ void BudgetManager::PlotBudget(const std::vector<Expense>& expenses, const std::
         if (ImPlot::BeginPlot("Cumulative Budget")) {
             ImPlot::SetupAxisScale(ImAxis_X1, ImPlotScale_Time);
             ImPlot::SetupAxis(ImAxis_Y1, "Amount (DKK)");
-            std::vector<double> allCumulativeValues;
-            allCumulativeValues.reserve(cumulativeExpenses.size() + cumulativeIncomes.size() + cumulativeDifference.size() + cumulativeBalance.size());
-            allCumulativeValues.insert(allCumulativeValues.end(), cumulativeExpenses.begin(), cumulativeExpenses.end());
-            allCumulativeValues.insert(allCumulativeValues.end(), cumulativeIncomes.begin(), cumulativeIncomes.end());
-            allCumulativeValues.insert(allCumulativeValues.end(), cumulativeDifference.begin(), cumulativeDifference.end());
-            allCumulativeValues.insert(allCumulativeValues.end(), cumulativeBalance.begin(), cumulativeBalance.end());
-            
-            // Compute min and max
-            static double minY, maxY, range, margin;
-            // Compute min/max for allCumulativeValues and balanceAmountHistory
-            double minCumulative = *std::min_element(allCumulativeValues.begin(), allCumulativeValues.end());
-            double maxCumulative = *std::max_element(allCumulativeValues.begin(), allCumulativeValues.end());
-            double minHistory = balanceAmountHistory.empty() ? minCumulative : *std::min_element(balanceAmountHistory.begin(), balanceAmountHistory.end());
-            double maxHistory = balanceAmountHistory.empty() ? maxCumulative : *std::max_element(balanceAmountHistory.begin(), balanceAmountHistory.end());
-            minY = std::min(minCumulative, minHistory);
-            maxY = std::max(maxCumulative, maxHistory);
-            range = maxY - minY;
-            margin = range * 0.05;
-            ImPlot::SetupAxisLimits(ImAxis_Y1, 0, maxY + margin, ImPlotCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_Y1, 0, p2.Ymax + p2.Ymargin, ImPlotCond_Always);
             ImPlot::SetupAxisFormat(ImAxis_Y1, format_euro_implot);
-            // Set x-axis limits to fit the selected months
-            if (months > 0) {
-                ImPlot::SetupAxisLimits(ImAxis_X1, balanceTimesHistory.empty() ? time.front() : balanceTimesHistory.front(), time.back(), ImPlotCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_X1, p2.Xmin, p2.Xmax, ImPlotCond_Always);
+            ImPlot::PlotLine("Cumulative Incomes"   , timeMonths.data(), cumulativeIncomes.data()   , months);
+            ImPlot::PlotLine("Cumulative Expenses"  , timeMonths.data(), cumulativeExpenses.data()  , months);
+            ImPlot::PlotLine("Cumulative Difference", timeMonths.data(), cumulativeDifference.data(), months);
+            ImPlot::PlotLine("Balance Over Time"    , timeMonths.data(), cumulativeBalance.data()   , months);
+            ImPlot::PlotLine("Historical Balance"   , balanceTimesHistory.data(), balanceAmountHistory.data(), nHistBalances);
+            ImPlot::PlotScatter("Historical Balance Points##hidden", balanceTimesHistory.data(), balanceAmountHistory.data(), nHistBalances, ImPlotItemFlags_NoLegend);
+            if (ImPlot::IsPlotHovered()) {
+                if (p2_hover.update(nHistBalances, balanceTimesHistory, balanceAmountHistory, p2.Xrange, p2.Yrange)) {
+                    ImPlot::PushStyleColor(ImPlotCol_MarkerFill, IM_COL32(255, 255, 0, 255)); // Bright yellow
+                    ImPlot::PushStyleVar(ImPlotStyleVar_MarkerSize, 4.0f); // Larger size
+                    ImPlot::PlotScatter("Hovered Historical Point##hidden", &balanceTimesHistory[p2_hover.closestIdx], &balanceAmountHistory[p2_hover.closestIdx], 1, ImPlotItemFlags_NoLegend);
+                    ImPlot::PopStyleVar(); // MarkerSize
+                    ImPlot::PopStyleColor(); // Bright yellow
+                    ImGui::BeginTooltip(); // Tooltip
+                    ImGui::Text("Date: %s\nValue: %.2f"
+                        , getDateStr(balanceTimesHistory[p2_hover.closestIdx]).c_str()
+                        , balanceAmountHistory[p2_hover.closestIdx]);
+                    ImGui::EndTooltip();
+                }
             }
-            
-            ImPlot::PlotLine("Cumulative Incomes", time.data(), cumulativeIncomes.data(), months);
-            ImPlot::PlotLine("Cumulative Expenses", time.data(), cumulativeExpenses.data(), months);
-            ImPlot::PlotLine("Cumulative Difference", time.data(), cumulativeDifference.data(), months);
-            ImPlot::PlotLine("Balance Over Time", time.data(), cumulativeBalance.data(), months);
-            ImPlot::PlotLine("Historical Balance", balanceTimesHistory.data(), balanceAmountHistory.data(), nHistBalances);
-            
             // Add marker for target value
-            if (targetValue > 0.0 && surpassIdx != -1) {
-                ImPlot::PlotScatter("Target Surpassed", &time[surpassIdx], &cumulativeBalance[surpassIdx], 1);
+            if (targetValue > 0.0 && surpassTargetIdx != -1) {
+                ImPlot::PlotScatter("Target Surpassed", &timeMonths[surpassTargetIdx], &cumulativeBalance[surpassTargetIdx], 1);
                 char markerLabel[64];
-                time_t t = (time_t)time[surpassIdx];
-                struct tm* tm_info = localtime(&t);
-                char dateStr[32];
-                strftime(dateStr, sizeof(dateStr), "%d-%m-%Y", tm_info);
-                snprintf(markerLabel, sizeof(markerLabel), "Target: %s\nDate: %s", format_euro(cumulativeBalance[surpassIdx]).c_str(), dateStr);
-                ImPlot::TagX(time[surpassIdx], ImVec4(0,0.5,0,1), "%s\n%s", format_euro(cumulativeBalance[surpassIdx]).c_str(), dateStr);
+                auto dateStr = getDateStr(timeMonths[surpassTargetIdx]);
+                snprintf(markerLabel, sizeof(markerLabel), "Target: %s\nDate: %s", format_euro(cumulativeBalance[surpassTargetIdx]).c_str(), dateStr.c_str());
+                ImPlot::TagX(timeMonths[surpassTargetIdx], ImVec4(0,0.5,0,1), "%s\n%s", format_euro(cumulativeBalance[surpassTargetIdx]).c_str(), dateStr.c_str());
             }
             
             ImPlot::EndPlot();
