@@ -4,20 +4,6 @@
 #include <iostream>
 #define CHECKBOX_FLAG(flags, flag) ImGui::CheckboxFlags(#flag, (unsigned int*)&flags, flag)
 
-/* The plot should highlight whether the historical data point is from a "confirmed" date or a "tentative" date.*/
-
-/* Add the status save feature*/
-
-/* When updating a field with the same date and id, the system should update the existing entry rather than creating a duplicate.*/
-
-/* The table should not show values with 0 amount.*/
-
-/* The table could also show when the field was last modified based on the seleted date*/
-
-/* The Current Date Selection should be a slider that only slides over the possible dates */
-
-/* Update Incomes and Expenses correspondingly */
-
 namespace budget {
 BudgetManager::BudgetManager()
     : balanceState(), months(12)
@@ -137,8 +123,9 @@ void BudgetManager::loadBalanceData() {
 
     // Get all historical dates and corresponding total balances for plot
     balanceDatesHist.clear();
-    balanceAmountHistory.clear();
-    balanceTimesHistory.clear();
+    balanceHistAmount.clear();
+    balanceHistTimes.clear();
+    balanceStatusHist.clear();
     nHistBalances = 0;
     std::ifstream file("../budget.json");
     nlohmann::json j;
@@ -147,11 +134,26 @@ void BudgetManager::loadBalanceData() {
         for (const auto& entry : j["history"]) {
             if (entry.contains("date") && entry.contains("balance") && entry["balance"].contains("balance")) {
                 std::string date = entry["date"];
+                std::string status = entry["status"];
                 balanceDatesHist.push_back(date);
+                balanceStatusHist.push_back(status);
             }
         }
     }
-    std::sort(balanceDatesHist.begin(), balanceDatesHist.end(), [](const auto& a, const auto& b) { return a < b; });
+    // Combine into pairs
+    std::vector<std::pair<std::string, std::string>> date_status_pairs;
+    for (size_t i = 0; i < balanceDatesHist.size(); ++i) {
+        date_status_pairs.emplace_back(balanceDatesHist[i], balanceStatusHist[i]);
+    }
+    // Sort by date
+    std::sort(date_status_pairs.begin(), date_status_pairs.end(),
+    [](const auto& a, const auto& b) { return a.first < b.first; });
+    // Split back into separate vectors
+    for (size_t i = 0; i < date_status_pairs.size(); ++i) {
+        balanceDatesHist[i] = date_status_pairs[i].first;
+        balanceStatusHist[i] = date_status_pairs[i].second;
+    }
+    // std::sort(balanceDatesHist.begin(), balanceDatesHist.end(), [](const auto& a, const auto& b) { return a < b; });
     // Convert balanceDatesHist to time_t
     for (const auto& dateStr : balanceDatesHist) {
         load_from_json(bankBalanceHist, filename, "balance.balance", dateStr);
@@ -159,13 +161,13 @@ void BudgetManager::loadBalanceData() {
         for (const auto& b : bankBalanceHist) {
             totalBalanceTmp += b.amountNet;
         }
-        balanceAmountHistory.push_back(totalBalanceTmp);
+        balanceHistAmount.push_back(totalBalanceTmp);
         // Convert date string "YYYY-MM-DD" to time_t
         std::tm tm = {};
         std::istringstream ss(dateStr);
         ss >> std::get_time(&tm, "%Y-%m-%d");
         time_t t = mktime(&tm);
-        balanceTimesHistory.push_back(static_cast<double>(t));
+        balanceHistTimes.push_back(static_cast<double>(t));
         // Increment counter
         nHistBalances++;
     }
@@ -733,7 +735,7 @@ void BudgetManager::PlotBudget()
     }
 
     // Display current total balance
-    ImGui::Text("Current Total Bank Balance: %s DKK", format_euro(balanceAmountHistory.back()).c_str());
+    ImGui::Text("Current Total Bank Balance: %s DKK", format_euro(balanceHistAmount.back()).c_str());
     ImGui::Text("Set a Target Amount (DKK) and see when it's reached:");
     ImGui::InputDouble("Target Amount (DKK)", &targetValue, 10000.0, 1000000.0, "%.0f");
 
@@ -776,19 +778,33 @@ void BudgetManager::PlotBudget()
             ImPlot::PlotLine("Cumulative Expenses"  , timeMonths.data(), cumulativeExpenses.data()  , months);
             ImPlot::PlotLine("Cumulative Difference", timeMonths.data(), cumulativeDifference.data(), months);
             ImPlot::PlotLine("Balance Over Time"    , timeMonths.data(), cumulativeBalance.data()   , months);
-            ImPlot::PlotLine("Historical Balance"   , balanceTimesHistory.data(), balanceAmountHistory.data(), nHistBalances);
-            ImPlot::PlotScatter("Historical Balance Points##hidden", balanceTimesHistory.data(), balanceAmountHistory.data(), nHistBalances, ImPlotItemFlags_NoLegend);
+            ImPlot::PlotLine("Historical Balance"   , balanceHistTimes.data(), balanceHistAmount.data(), nHistBalances);
+            // Plot points with color based on status
+            for (int i = 0; i < nHistBalances; ++i) {
+                if (balanceStatusHist[i] == "confirmed") {
+                    ImPlot::PushStyleColor(ImPlotCol_MarkerFill, plotVisuals.color_confirmed);
+                    ImPlot::PushStyleVar(ImPlotStyleVar_MarkerSize, plotVisuals.markerSize_confirmed);
+                    ImPlot::PlotScatter("Historical Balance Points##hidden", &balanceHistTimes[i], &balanceHistAmount[i], 1, ImPlotItemFlags_NoLegend);
+                    ImPlot::PopStyleColor(); ImPlot::PopStyleVar();
+                } else {
+                    ImPlot::PushStyleColor(ImPlotCol_MarkerFill, plotVisuals.color_tentative);
+                    ImPlot::PushStyleVar(ImPlotStyleVar_MarkerSize, plotVisuals.markerSize_tentative);
+                    ImPlot::PlotScatter("Historical Balance Points##hidden", &balanceHistTimes[i], &balanceHistAmount[i], 1, ImPlotItemFlags_NoLegend);
+                    ImPlot::PopStyleColor(); ImPlot::PopStyleVar();
+                }
+                
+            }
             if (ImPlot::IsPlotHovered()) {
-                if (p2_hover.update(nHistBalances, balanceTimesHistory, balanceAmountHistory, p2.Xrange, p2.Yrange)) {
-                    ImPlot::PushStyleColor(ImPlotCol_MarkerFill, IM_COL32(255, 255, 0, 255)); // Bright yellow
-                    ImPlot::PushStyleVar(ImPlotStyleVar_MarkerSize, 4.0f); // Larger size
-                    ImPlot::PlotScatter("Hovered Historical Point##hidden", &balanceTimesHistory[p2_hover.closestIdx], &balanceAmountHistory[p2_hover.closestIdx], 1, ImPlotItemFlags_NoLegend);
-                    ImPlot::PopStyleVar(); // MarkerSize
-                    ImPlot::PopStyleColor(); // Bright yellow
+                if (p2_hover.update(nHistBalances, balanceHistTimes, balanceHistAmount, p2.Xrange, p2.Yrange)) {
+                    ImPlot::PushStyleColor(ImPlotCol_MarkerFill, plotVisuals.color_hovered); // Bright yellow
+                    ImPlot::PushStyleVar(ImPlotStyleVar_MarkerSize, plotVisuals.markerSize_hovered); // Larger size
+                    ImPlot::PlotScatter("Hovered Historical Point##hidden", &balanceHistTimes[p2_hover.closestIdx], &balanceHistAmount[p2_hover.closestIdx], 1, ImPlotItemFlags_NoLegend);
+                    ImPlot::PopStyleVar(); ImPlot::PopStyleColor();
                     ImGui::BeginTooltip(); // Tooltip
-                    ImGui::Text("Date: %s\nValue: %.2f"
-                        , getDateStr(balanceTimesHistory[p2_hover.closestIdx]).c_str()
-                        , balanceAmountHistory[p2_hover.closestIdx]);
+                    ImGui::Text("Date: %s\nValue: %.2f\nStatus: %s"
+                        , getDateStr(balanceHistTimes[p2_hover.closestIdx]).c_str()
+                        , balanceHistAmount[p2_hover.closestIdx]
+                        , balanceStatusHist[p2_hover.closestIdx].c_str());
                     ImGui::EndTooltip();
                 }
             }

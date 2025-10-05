@@ -7,6 +7,27 @@
 #include "imgui.h"
 #include "implot.h"
 
+/* Add the status save feature*/
+
+/* When updating a field with the same date and id, the system should update the existing entry rather than creating a duplicate.*/
+
+/* The table should not show values with 0 amount.*/
+
+/* The table could also show when the field was last modified based on the seleted date*/
+
+/* The Current Date Selection should be a slider that only slides over the possible dates */
+
+/* Update Incomes and Expenses correspondingly */
+
+struct PlotVisuals {
+    ImU32 color_confirmed = IM_COL32(0, 255, 0, 255); // Green
+    ImU32 color_tentative = IM_COL32(200, 200, 200, 200); // Gray
+    ImU32 color_hovered   = IM_COL32(255, 255, 0, 255); // Yellow
+    float markerSize_confirmed = 5.0f;
+    float markerSize_tentative = 3.0f;
+    float markerSize_hovered   = 6.0f;
+};
+    
 struct BudgetState {
     std::vector<std::string> allNames;
     std::vector<std::string> allDates;
@@ -64,8 +85,9 @@ namespace budget {
         // Balance parameters for plot
         std::vector<BankBalance> bankBalanceHist;
         std::vector<std::string> balanceDatesHist;
-        std::vector<double> balanceTimesHistory;
-        std::vector<double> balanceAmountHistory;
+        std::vector<double> balanceHistTimes;
+        std::vector<double> balanceHistAmount;
+        std::vector<std::string> balanceStatusHist;
         int nHistBalances = 0;
 
         double monthlyAvgExpense = 0.0, monthlyAvgIncome = 0.0;
@@ -90,6 +112,7 @@ namespace budget {
         PlotParams p1;
         PlotParams p2;
         HoverParams p2_hover;
+        PlotVisuals plotVisuals;
     public:
         BudgetManager();
         ~BudgetManager() = default;
@@ -120,7 +143,7 @@ namespace budget {
                 cumulativeExpenses  [i]   = monthlyAvgExpenseTmp * (i);
                 cumulativeIncomes   [i]   = monthlyAvgIncomeTmp  * (i);
                 cumulativeDifference[i]   = cumulativeIncomes[i] - cumulativeExpenses[i];
-                cumulativeBalance   [i]   = balanceAmountHistory.back() + cumulativeDifference[i];
+                cumulativeBalance   [i]   = balanceHistAmount.back() + cumulativeDifference[i];
                 timeMonths          [i]   = now + i * 30.0 * 24.0 * 3600.0; // Approximate month as 30 days
                 if (i%12==0 && i!=0) {
                     // Apply inflation adjustment at the end of each year
@@ -145,13 +168,13 @@ namespace budget {
 
             double minCumulative = *std::min_element(allCumulativeValues.begin(), allCumulativeValues.end());
             double maxCumulative = *std::max_element(allCumulativeValues.begin(), allCumulativeValues.end());
-            double minHistory = balanceAmountHistory.empty() ? minCumulative : *std::min_element(balanceAmountHistory.begin(), balanceAmountHistory.end());
-            double maxHistory = balanceAmountHistory.empty() ? maxCumulative : *std::max_element(balanceAmountHistory.begin(), balanceAmountHistory.end());
+            double minHistory = balanceHistAmount.empty() ? minCumulative : *std::min_element(balanceHistAmount.begin(), balanceHistAmount.end());
+            double maxHistory = balanceHistAmount.empty() ? maxCumulative : *std::max_element(balanceHistAmount.begin(), balanceHistAmount.end());
             p2.Ymin = std::min(minCumulative, minHistory);
             p2.Ymax = std::max(maxCumulative, maxHistory);
             p2.Yrange  = p2.Ymax - p2.Ymin;
             p2.Ymargin = p2.Yrange * 0.05;
-            p2.Xmin    = balanceTimesHistory.empty() ? timeMonths.front() : balanceTimesHistory.front();
+            p2.Xmin    = balanceHistTimes.empty() ? timeMonths.front() : balanceHistTimes.front();
             p2.Xmax    = timeMonths.back();
             p2.Xrange  = p2.Xmax - p2.Xmin;
         }
