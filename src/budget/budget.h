@@ -15,8 +15,6 @@
 
 /* The table could also show when the field was last modified based on the seleted date*/
 
-/* The Current Date Selection should be a slider that only slides over the possible dates */
-
 /* Update Incomes and Expenses correspondingly */
 
 struct PlotVisuals {
@@ -28,20 +26,22 @@ struct PlotVisuals {
     float markerSize_hovered   = 6.0f;
 };
     
-struct BudgetState {
-    std::vector<std::string> allNames;
-    std::vector<std::string> allDates;
-    std::string selectedDate;
-    std::string status;
-    bool loadedDates;
-    bool loadedData;
-    BudgetState() : selectedDate(""), loadedData(true) {}
-};
-
 struct PlotParams {
     double Ymin, Ymax, Yrange, Ymargin;
     double Xmin, Xmax, Xrange, Xmargin;
     PlotParams() : Ymin(0), Ymax(0), Yrange(0), Ymargin(0), Xmin(0), Xmax(0), Xrange(0), Xmargin(0) {}
+};
+
+struct selectDateParams {
+    std::vector<std::string> allNames;
+    std::vector<std::string> allDates;
+    std::string selectedDate;
+    std::string status;
+    bool loadedDates; 
+    bool loadedData;
+    char dateBuf[16]="";
+    int  dateIdx;
+    selectDateParams() : loadedDates(false), loadedData(true) {}
 };
 
 struct HoverParams {
@@ -80,7 +80,7 @@ namespace budget {
         std::vector<Expense> expenses;
 
         // Balance parameters for table
-        BudgetState balanceState;
+        selectDateParams balanceDate;
         double totalBalanceTable = 0.0;
         // Balance parameters for plot
         std::vector<BankBalance> bankBalanceHist;
@@ -196,7 +196,7 @@ namespace budget {
 
         
 
-        void SelectDateUI(std::vector<std::string>& allDates, std::string& selectedDate, std::string& status, bool& loadedDates, bool& loadedData);
+        void SelectDateUI(selectDateParams& dateParams);
     };
 }
 

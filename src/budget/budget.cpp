@@ -4,14 +4,6 @@
 #include <iostream>
 #define CHECKBOX_FLAG(flags, flag) ImGui::CheckboxFlags(#flag, (unsigned int*)&flags, flag)
 
-namespace budget {
-BudgetManager::BudgetManager()
-    : balanceState(), months(12)
-{
-    loadBalanceData();
-    setMonths(months);
-}
-
 // Helper to get today's date in YYYY-MM-DD format
 auto getToday = []() -> std::string {
     time_t t = time(nullptr);
@@ -31,10 +23,19 @@ auto getDateStr = [](double time) -> std::string {
     return std::string(buf);
 };
 
-void BudgetManager::SelectDateUI(std::vector<std::string>& allDates, std::string& selectedDate, std::string& status, bool& loadedDates, bool& loadedData){
+namespace budget {
+BudgetManager::BudgetManager()
+    : balanceDate(), months(12)
+{
+    balanceDate.selectedDate = getToday();
+    loadBalanceData();
+    setMonths(months);
+}
+
+void BudgetManager::SelectDateUI(selectDateParams& dP){
     // Load all dates from budget.json
-    if (!loadedDates) {
-        allDates.clear();
+    if (!dP.loadedDates) {
+        dP.allDates.clear();
         std::ifstream file(filename);
         if (file) {
             nlohmann::json j;
@@ -42,47 +43,51 @@ void BudgetManager::SelectDateUI(std::vector<std::string>& allDates, std::string
             if (j.contains("history") && j["history"].is_array()) {
                 for (const auto& entry : j["history"]) {
                     if (entry.contains("date") && entry["date"].is_string()) {
-                        allDates.push_back(entry["date"].get<std::string>());
+                        dP.allDates.push_back(entry["date"].get<std::string>());
                     }
                 }
             }
-            std::sort(allDates.begin(), allDates.end(), [](const auto& a, const auto& b) { return a < b; }); // Sort dates ascending
+            std::sort(dP.allDates.begin(), dP.allDates.end(), [](const auto& a, const auto& b) { return a < b; }); // Sort dates ascending
         }
-        loadedDates = true;
+        dP.dateIdx = dP.allDates.size()-1;
+        dP.loadedDates = true;
     }
-    // Default selected date is today if not set
-    if (selectedDate.empty()) {
-        selectedDate = getToday();
-    }
-    // Date picker UI (combo + input)
     ImGui::Text("Select Date:");
-    static char dateBuf[16] = "";
-    strncpy(dateBuf, selectedDate.c_str(), sizeof(dateBuf)-1);
-    dateBuf[sizeof(dateBuf)-1] = '\0';
-    static std::string prevSelectedDate = selectedDate;
-    if (ImGui::BeginCombo("##DateCombo", dateBuf)) {
-        for (const auto& d : allDates) {
-            bool is_selected = (selectedDate == d);
-            if (ImGui::Selectable(d.c_str(), is_selected)) {
-                selectedDate = d;
-                strncpy(dateBuf, d.c_str(), sizeof(dateBuf)-1);
-                dateBuf[sizeof(dateBuf)-1] = '\0';
-            }
-            if (is_selected) ImGui::SetItemDefaultFocus();
+    if (dP.dateBuf[0] == '\0') {
+        strncpy(dP.dateBuf, dP.selectedDate.c_str(), sizeof(dP.dateBuf)-1);
+        dP.dateBuf[sizeof(dP.dateBuf)-1] = '\0';
+    }
+    // Slider on top
+    if (!dP.allDates.empty()) {
+        strncpy(dP.dateBuf, dP.selectedDate.c_str(), sizeof(dP.dateBuf)-1);
+        dP.dateBuf[sizeof(dP.dateBuf)-1] = '\0';
+        auto it = std::find(dP.allDates.begin(), dP.allDates.end(), dP.selectedDate);
+        if (it != dP.allDates.end()) {
+            dP.dateIdx = static_cast<int>(std::distance(dP.allDates.begin(), it));
+        }         
+        if (ImGui::SliderInt("Date Slider", &dP.dateIdx, 0, static_cast<int>(dP.allDates.size())-1, dP.allDates[dP.dateIdx].c_str())) {
+            dP.selectedDate = dP.allDates[dP.dateIdx];
+            strncpy(dP.dateBuf, dP.selectedDate.c_str(), sizeof(dP.dateBuf)-1);
+            dP.dateBuf[sizeof(dP.dateBuf)-1] = '\0';
+            dP.loadedData = false;
         }
-        ImGui::EndCombo();
-    }
-    ImGui::SameLine();
-    ImGui::Text("Current Date Selection");
-    if (ImGui::InputText("Select Date", dateBuf, sizeof(dateBuf))) {
-        selectedDate = std::string(dateBuf);
-    }
-    if (selectedDate != prevSelectedDate) {
-        loadedData = false;
-        prevSelectedDate = selectedDate;
+        ImGui::SetNextItemWidth(120);
+        if (ImGui::InputText("Type or Paste Date (YYYY-MM-DD)", dP.dateBuf, sizeof(dP.dateBuf))) {
+            std::string typedDate(dP.dateBuf);
+            auto it2 = std::find(dP.allDates.begin(), dP.allDates.end(), typedDate);
+            if (it2 != dP.allDates.end()) {
+                dP.dateIdx = static_cast<int>(std::distance(dP.allDates.begin(), it2));
+                dP.selectedDate = *it2;
+                dP.loadedData = false;
+            } else {
+                dP.selectedDate = typedDate; // Don't update dateIdx unless it's a valid date
+            }
+        }
+    } else {
+        ImGui::Text("No dates available.");
     }
     // Find status for selected date (scan in ascending order, use last found)
-    status = "tentative";
+    dP.status = "tentative";
     std::vector<std::pair<std::string, std::string>> statusEntries;
     std::ifstream file2(filename);
     if (file2) {
@@ -90,7 +95,7 @@ void BudgetManager::SelectDateUI(std::vector<std::string>& allDates, std::string
         file2 >> j;
         if (j.contains("history") && j["history"].is_array()) {
             for (const auto& entry : j["history"]) {
-                if (entry.contains("date") && entry["date"].is_string() && entry["date"] <= selectedDate && entry.contains("status")) {
+                if (entry.contains("date") && entry["date"].is_string() && entry["date"] <= dP.selectedDate && entry.contains("status")) {
                     statusEntries.emplace_back(entry["date"].get<std::string>(), entry["status"].get<std::string>());
                 }
             }
@@ -99,26 +104,26 @@ void BudgetManager::SelectDateUI(std::vector<std::string>& allDates, std::string
     if (!statusEntries.empty()) {
         // Sort by date ascending and use the last one
         std::sort(statusEntries.begin(), statusEntries.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
-        status = statusEntries.back().second;
+        dP.status = statusEntries.back().second;
     }
     // ImGui::Text("Status: %s", status.c_str());
-    if (status == "confirmed") {
-        ImGui::TextColored(ImVec4(0,1,0,1), "Status: %s", status.c_str());
-    } else if (status == "tentative") {
-        ImGui::TextColored(ImVec4(1,1,0,1), "Status: %s", status.c_str());
+    if (dP.status == "confirmed") {
+        ImGui::TextColored(ImVec4(0,1,0,1), "Status: %s", dP.status.c_str());
+    } else if (dP.status == "tentative") {
+        ImGui::TextColored(ImVec4(1,1,0,1), "Status: %s", dP.status.c_str());
     } else {
-        ImGui::TextColored(ImVec4(1,0,0,1), "Status: %s", status.c_str());
+        ImGui::TextColored(ImVec4(1,0,0,1), "Status: %s", dP.status.c_str());
     }
 }
 
 void BudgetManager::loadBalanceData() {
     // Load bank balances for selected date
-    load_from_json(bankBalance, filename, "balance.balance", balanceState.selectedDate);
+    load_from_json(bankBalance, filename, "balance.balance", balanceDate.selectedDate);
     setTotalBalanceTable(0.0);
-    balanceState.allNames.clear();
+    balanceDate.allNames.clear();
     for (auto& b : bankBalance) {
         setTotalBalanceTable(getTotalBalanceTable() + b.amountNet);
-        balanceState.allNames.push_back(b.source);
+        balanceDate.allNames.push_back(b.source);
     }
 
     // Get all historical dates and corresponding total balances for plot
@@ -171,20 +176,14 @@ void BudgetManager::loadBalanceData() {
         // Increment counter
         nHistBalances++;
     }
-    balanceState.loadedData = true;
+    balanceDate.loadedData = true;
 }
 
 void BudgetManager::ShowBankBalanceInput() {    
     // --- Date Picker and Status UI ---
-    // static std::vector<std::string> allNames;
-    // static std::vector<std::string> allDates;
-    // static std::string selectedDate;
-    // static std::string status;
-    // static bool loadedDates = false;
-    // static bool loadedData = true;
-    SelectDateUI(balanceState.allDates, balanceState.selectedDate, balanceState.status, balanceState.loadedDates, balanceState.loadedData);
+    SelectDateUI(balanceDate);
     // --- End Date Picker and Status UI ---
-    if (!balanceState.loadedData) {
+    if (!balanceDate.loadedData) {
         loadBalanceData();
     }
     static int editId = 0;
@@ -201,7 +200,7 @@ void BudgetManager::ShowBankBalanceInput() {
         strncpy(source, bal.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
         amount = static_cast<float>(bal.amountNet);
-        balanceState.selectedDate = getToday();
+        balanceDate.selectedDate = getToday();
     };
 
     auto SetDeleteBalance = [&](const BankBalance& bal) {
@@ -209,10 +208,10 @@ void BudgetManager::ShowBankBalanceInput() {
         strncpy(source, bal.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
         amount = 0.0f;
-        balanceState.selectedDate = getToday();
+        balanceDate.selectedDate = getToday();
     };
 
-    if ((editId == 0) && !(std::find(balanceState.allNames.begin(), balanceState.allNames.end(), source) != balanceState.allNames.end())) {
+    if ((editId == 0) && !(std::find(balanceDate.allNames.begin(), balanceDate.allNames.end(), source) != balanceDate.allNames.end())) {
         if (ImGui::Button("Add New Bank Balance")) {
             if (strlen(source) > 0 && amount > 0.0f) {
                 // Find the first unused positive integer ID
@@ -235,11 +234,11 @@ void BudgetManager::ShowBankBalanceInput() {
                     static_cast<double>(amount),
                 };
                 std::vector<BankBalance> toSaveBalance = {newBalance};
-                save__to__json(toSaveBalance, filename, "balance.balance", balanceState.selectedDate, "tentative");
+                save__to__json(toSaveBalance, filename, "balance.balance", balanceDate.selectedDate, "tentative");
                 source[0] = '\0';
                 amount = 0.0f;
-                balanceState.loadedData = false;
-                balanceState.loadedDates = false; // Reload dates to include new date if added
+                balanceDate.loadedData = false;
+                balanceDate.loadedDates = false; // Reload dates to include new date if added
             }
         }
     } else {
@@ -250,12 +249,12 @@ void BudgetManager::ShowBankBalanceInput() {
                 static_cast<double>(amount),
             };
             std::vector<BankBalance> toSaveBalance = {newBalance};
-            save__to__json(toSaveBalance, filename, "balance.balance", balanceState.selectedDate, "tentative");
+            save__to__json(toSaveBalance, filename, "balance.balance", balanceDate.selectedDate, "tentative");
             source[0] = '\0';
             amount = 0.0f;
             editId = 0;
-            balanceState.loadedData = false;
-            balanceState.loadedDates = false; // Reload dates to include new date if added
+            balanceDate.loadedData = false;
+            balanceDate.loadedDates = false; // Reload dates to include new date if added
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel Changes")) {
