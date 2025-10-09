@@ -9,12 +9,10 @@
 
 /* Add the status save feature*/
 
-/* When updating a field with the same date and id, the system should update the existing entry rather than creating a duplicate.*/
-
 /* The table should not show values with 0 amount.*/
 
 /* The table could also show when the field was last modified based on the seleted date*/
-
+/* The table should offer filtering options */
 /* Update Incomes and Expenses correspondingly */
 
 struct PlotVisuals {

@@ -127,18 +127,32 @@ inline void save__to__json(const T& in, const std::string& filename, const std::
         ptr = &((*ptr)[keys[i]]);
     }
     // Set the final key to the value
-    // (*ptr)[keys.back()] = in;
-    // If the final key exists and is an array, append; else, create array and add
+    // For vector types, update existing entries with the same id, otherwise append
     if constexpr (is_std_vector<T>::value) {
-        // Append each element to the array
-        if ((*ptr).contains(keys.back()) && (*ptr)[keys.back()].is_array()) {
-            for (const auto& item : in) {
-                (*ptr)[keys.back()].push_back(item);
-            }
-        } else {
+        // Ensure the array exists
+        if (!(*ptr).contains(keys.back()) || !(*ptr)[keys.back()].is_array()) {
             (*ptr)[keys.back()] = nlohmann::json::array();
-            for (const auto& item : in) {
-                (*ptr)[keys.back()].push_back(item);
+        }
+        auto& arr = (*ptr)[keys.back()];
+        for (const auto& item : in) {
+            nlohmann::json item_json = item;
+            // Only handle items with 'id' field
+            if (item_json.contains("id")) {
+                int id = item_json["id"];
+                bool updated = false;
+                for (auto& arr_item : arr) {
+                    if (arr_item.contains("id") && arr_item["id"] == id) {
+                        arr_item = item_json;
+                        updated = true;
+                        break;
+                    }
+                }
+                if (!updated) {
+                    arr.push_back(item_json);
+                }
+            } else {
+                // If no id, just append (fallback)
+                arr.push_back(item_json);
             }
         }
     } else {
