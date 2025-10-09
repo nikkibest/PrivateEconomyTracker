@@ -577,7 +577,7 @@
                 ]
             },
             "date": "2023-09-01",
-            "status": "tentative"
+            "status": "confirmed"
         },
         {
             "balance": {
@@ -595,7 +595,7 @@
                 ]
             },
             "date": "2023-10-01",
-            "status": "tentative"
+            "status": "confirmed"
         },
         {
             "balance": {
@@ -613,7 +613,7 @@
                 ]
             },
             "date": "2024-03-01",
-            "status": "tentative"
+            "status": "confirmed"
         },
         {
             "balance": {
@@ -631,7 +631,7 @@
                 ]
             },
             "date": "2024-08-01",
-            "status": "tentative"
+            "status": "confirmed"
         },
         {
             "balance": {
@@ -649,7 +649,7 @@
                 ]
             },
             "date": "2025-01-01",
-            "status": "tentative"
+            "status": "confirmed"
         },
         {
             "balance": {
@@ -667,7 +667,7 @@
                 ]
             },
             "date": "2025-03-01",
-            "status": "tentative"
+            "status": "confirmed"
         },
         {
             "balance": {
@@ -685,7 +685,7 @@
                 ]
             },
             "date": "2025-05-01",
-            "status": "tentative"
+            "status": "confirmed"
         }
     ]
 }

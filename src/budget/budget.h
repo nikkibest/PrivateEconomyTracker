@@ -13,7 +13,6 @@
 
 /* The table could also show when the field was last modified based on the seleted date*/
 /* The table should offer filtering options */
-/* Update Incomes and Expenses correspondingly */
 
 struct PlotVisuals {
     ImU32 color_confirmed = IM_COL32(0, 255, 0, 255); // Green
@@ -192,9 +191,8 @@ namespace budget {
         template<typename T>
         void CreateTable(const char*  tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::function<void(const T&)> editCallback = nullptr, std::function<void(const T&)> deleteCallback = nullptr);
 
-        
-
-        void SelectDateUI(selectDateParams& dateParams);
+        template<typename T>
+        void SelectDateUI(std::vector<T>& items, selectDateParams& dateParams, std::string itemName);
     };
 }
 

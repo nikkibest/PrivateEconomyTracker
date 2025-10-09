@@ -31,8 +31,8 @@ BudgetManager::BudgetManager()
     loadBalanceData();
     setMonths(months);
 }
-
-void BudgetManager::SelectDateUI(selectDateParams& dP){
+template<typename T>
+void BudgetManager::SelectDateUI(std::vector<T>& items, selectDateParams& dP, std::string itemName){
     // Load all dates from budget.json
     if (!dP.loadedDates) {
         dP.allDates.clear();
@@ -111,9 +111,13 @@ void BudgetManager::SelectDateUI(selectDateParams& dP){
         ImGui::TextColored(ImVec4(0,1,0,1), "Status: %s", dP.status.c_str());
     } else if (dP.status == "tentative") {
         ImGui::TextColored(ImVec4(1,1,0,1), "Status: %s", dP.status.c_str());
+        if (ImGui::Button("Confirm This Status")) {
+            save__to__json(items, filename, itemName, dP.allDates[dP.dateIdx], "confirmed");
+            balanceDate.loadedData = false;
+        }
     } else {
         ImGui::TextColored(ImVec4(1,0,0,1), "Status: %s", dP.status.c_str());
-    }
+    }  
 }
 
 void BudgetManager::loadBalanceData() {
@@ -181,7 +185,7 @@ void BudgetManager::loadBalanceData() {
 
 void BudgetManager::ShowBankBalanceInput() {    
     // --- Date Picker and Status UI ---
-    SelectDateUI(balanceDate);
+    SelectDateUI(bankBalance, balanceDate, "balance.balance");
     // --- End Date Picker and Status UI ---
     if (!balanceDate.loadedData) {
         loadBalanceData();
