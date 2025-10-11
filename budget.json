@@ -17,7 +17,6 @@
             },
             "date": "2025-09-28",
             "expenses": {
-                "avgMonthly": 28289.5,
                 "categories": [
                     "Bolig",
                     "Forsikring",
@@ -488,11 +487,9 @@
                         "typeAccount": "Lønkonto",
                         "typeExpense": "Must"
                     }
-                ],
-                "totalYearly": 339474.0
+                ]
             },
             "incomes": {
-                "avgMonthly": 62836.583333333336,
                 "incomes": [
                     {
                         "amountNet": 30748.0,
@@ -550,8 +547,7 @@
                         "nrAnnualPayments": 1.0,
                         "source": "Forbrugsforeningen"
                     }
-                ],
-                "totalYearly": 754039.0
+                ]
             },
             "persons": [
                 "Skatti",

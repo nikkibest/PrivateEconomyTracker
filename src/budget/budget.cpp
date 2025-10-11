@@ -59,8 +59,15 @@ void BudgetManager::SelectDateUI(std::vector<T>& items, selectDateParams& dP, st
             file >> j;
             if (j.contains("history") && j["history"].is_array()) {
                 for (const auto& entry : j["history"]) {
-                    if (entry.contains("date") && entry["date"].is_string()) {
-                        dP.allDates.push_back(entry["date"].get<std::string>());
+                    // Split itemName by '.' into two parts
+                    auto dotPos = itemName.find('.');
+                    if (dotPos != std::string::npos) {
+                        std::string first = itemName.substr(0, dotPos);
+                        std::string second = itemName.substr(dotPos + 1);
+                        if (entry.contains("date") && entry["date"].is_string() &&
+                            entry.contains(first) && entry[first].contains(second)) {
+                                dP.allDates.push_back(entry["date"].get<std::string>());
+                            }
                     }
                 }
             }
@@ -265,22 +272,20 @@ void BudgetManager::loadIncomeData() {
 }
 
 void BudgetManager::ShowBankBalanceInput() {    
-    // --- Date Picker and Status UI ---
     SelectDateUI(bankBalance, balanceDate, "balance.balance");
-    // --- End Date Picker and Status UI ---
     if (!balanceDate.loadedData) {
         loadBalanceData();
     }
     static int editId = 0;
     static char source[64] = "";
     static float amount = 0.0f;
-    // ImGui::Begin("Bank Balance");
-    ImGui::Text("Add a new household bank balance here.");
+    if (editId == 0) {ImGui::Text("Add a new household bank balance here."); }
+    else {ImGui::Text("Update existing household bank balance here."); }
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
     ImGui::InputFloat("Amount", &amount);
 
      // Helper to copy income data to input fields
-    auto SetEditBalance = [&](const BankBalance& bal) {
+    auto SetUpdateBalance = [&](const BankBalance& bal) {
         editId = bal.id;
         strncpy(source, bal.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
@@ -302,7 +307,7 @@ void BudgetManager::ShowBankBalanceInput() {
                 // Find the first unused positive integer ID
                 std::set<int> usedIds;
                 std::vector<BankBalance> histBankBalance = bankBalance;
-                load_from_json(histBankBalance, filename, "balance.balance", "");
+                load_from_json(histBankBalance, filename, "balance.balance", "");// load all bankBalance to find used IDs
                 for (const auto& bal : histBankBalance) {
                     usedIds.insert(bal.id);
                 }
@@ -322,12 +327,13 @@ void BudgetManager::ShowBankBalanceInput() {
                 save__to__json(toSaveBalance, filename, "balance.balance", balanceDate.selectedDate, "tentative");
                 source[0] = '\0';
                 amount = 0.0f;
+                editId  = 0;
                 balanceDate.loadedData = false;
                 balanceDate.loadedDates = false; // Reload dates to include new date if added
             }
         }
     } else {
-        if (ImGui::Button("Add Bank Balance Changes")) {
+        if (ImGui::Button("Save Bank Balance Update")) {
             BankBalance newBalance{
                 editId,
                 std::string(source),
@@ -342,7 +348,7 @@ void BudgetManager::ShowBankBalanceInput() {
             balanceDate.loadedDates = false; // Reload dates to include new date if added
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel Changes")) {
+        if (ImGui::Button("Cancel Update")) {
             source[0] = '\0';
             amount = 0.0f;
             editId = 0;
@@ -362,18 +368,16 @@ void BudgetManager::ShowBankBalanceInput() {
 
     ImGui::Separator();
     ImGui::Text("All Bank Balances:");
-    CreateTable<BankBalance>("BankBalanceTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance", id_to_date_balance, SetEditBalance, SetDeleteBalance);    
+    CreateTable<BankBalance>("BankBalanceTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance", id_to_date_balance, SetUpdateBalance, SetDeleteBalance);    
     ImGui::Separator();
-    // ImGui::End();
+    ImGui::Separator();
+    ImGui::Separator();
 }
 
-void BudgetManager::ShowIncomeInput() {    
-    static bool loaded = false;
-    
-    if (!loaded) {
-        // Load incomes from file or initialize as needed
-        load_from_json(incomes, filename, "incomes.incomes","");
-        loaded = true;
+void BudgetManager::ShowIncomeInput() {
+    SelectDateUI(incomes, incomeDate, "incomes.incomes");
+    if (!incomeDate.loadedData) {
+        loadIncomeData();
     }
     // Static for editing
     static int editId = 0;
@@ -382,114 +386,130 @@ void BudgetManager::ShowIncomeInput() {
     static float monthly = 0.0f;
     static float yearly = 0.0f;
     static float amount = 0.0f;
-    // ImGui::Begin("Incomes");
-    ImGui::Text("Add a new household income here.");
+    if (editId == 0) {ImGui::Text("Add a new household income here."); }
+    else {ImGui::Text("Update existing household income here."); }
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
     ImGui::InputFloat("Nr. Annual Payments", &nrAnnualPayments);
     ImGui::InputFloat("Amount", &amount);
 
     // Helper to copy income data to input fields
-    auto SetEditIncome = [&](const Income& inc) {
+    auto SetUpdateIncome = [&](const Income& inc) {
         editId = inc.id;
         strncpy(source, inc.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
         nrAnnualPayments = static_cast<float>(inc.nrAnnualPayments);
-        amount = static_cast<float>(inc.amountNet);
+        amount  = static_cast<float>(inc.amountNet);
         monthly = static_cast<float>(inc.amountNet_month);
-        yearly = static_cast<float>(inc.amountNet_year);
+        yearly  = static_cast<float>(inc.amountNet_year);
+        incomeDate.selectedDate = getToday();
     };
 
-    if (editId == 0) {
-        if (ImGui::Button("Add Income")) {
+    auto SetDeleteIncome = [&](const Income& inc) {
+        editId = inc.id;
+        strncpy(source, inc.source.c_str(), sizeof(source) - 1);
+        source[sizeof(source) - 1] = '\0';
+        nrAnnualPayments = 0.0f;
+        amount  = 0.0f;
+        monthly = 0.0f;
+        yearly  = 0.0f;
+        incomeDate.selectedDate = getToday();
+    };
+
+    if ((editId == 0)  && !(std::find(incomeDate.allNames.begin(), incomeDate.allNames.end(), source) != incomeDate.allNames.end())) {
+        if (ImGui::Button("Add New Income")) {
             if (strlen(source) > 0 && amount > 0.0f) {
                 yearly = amount * nrAnnualPayments;
                 monthly = yearly / 12.0f;
                 // Find the first unused positive integer ID
                 std::set<int> usedIds;
-                for (const auto& inc : incomes) {
+                std::vector<Income> histIncome = incomes;
+                load_from_json(histIncome, filename, "incomes.incomes", ""); // load all incomes to find used IDs
+                for (const auto& inc : histIncome) {
                     usedIds.insert(inc.id);
                 }
                 int newId = 1;
-                while (usedIds.count(newId)) {
+                while (true) {
+                    if (usedIds.find(newId) == usedIds.end()) {
+                        break;
+                    }
                     ++newId;
                 }
-                incomes.push_back(Income{
+                Income newIncome{
                     newId,
                     std::string(source),
                     static_cast<double>(nrAnnualPayments),
                     static_cast<double>(amount),
                     static_cast<double>(monthly),
                     static_cast<double>(yearly)
-                });
-                //save__to__json(incomes, filename, "incomes.incomes");
+                };
+                std::vector<Income> toSaveIncome = {newIncome};
+                save__to__json(toSaveIncome, filename, "incomes.incomes", incomeDate.selectedDate, "tentative");
                 source[0] = '\0';
                 nrAnnualPayments = 0.0f;
-                amount = 0.0f;
+                amount  = 0.0f;
                 monthly = 0.0f;
-                yearly = 0.0f;
-                // Update summary values
-                //ComputeDependentValues(incomes, filename, "incomes");
+                yearly  = 0.0f;
+                editId  = 0;
+                incomeDate.loadedData = false;
+                incomeDate.loadedDates = false; // Reload dates to include new date if added
             }
         }
     } else {
-        if (ImGui::Button("Save Changes")) {
+        if (ImGui::Button("Save Income Update")) {
             if (strlen(source) > 0 && amount > 0.0f) {
                 yearly = amount * nrAnnualPayments;
                 monthly = yearly / 12.0f;
-                for (auto& inc : incomes) {
-                    if (inc.id == editId) {
-                        inc.source = source;
-                        inc.nrAnnualPayments = static_cast<double>(nrAnnualPayments);
-                        inc.amountNet = static_cast<double>(amount);
-                        inc.amountNet_month = static_cast<double>(monthly);
-                        inc.amountNet_year = static_cast<double>(yearly);
-                        break;
-                    }
-                }
-                //save__to__json(incomes, filename, "incomes.incomes");
+                Income newIncome{
+                    editId,
+                    std::string(source),
+                    static_cast<double>(nrAnnualPayments),
+                    static_cast<double>(amount),
+                    static_cast<double>(monthly),
+                    static_cast<double>(yearly)
+                };
+                std::vector<Income> toSaveIncome = {newIncome};
+                save__to__json(toSaveIncome, filename, "incomes.incomes", incomeDate.selectedDate, "tentative");
                 source[0] = '\0';
                 nrAnnualPayments = 0.0f;
-                amount = 0.0f;
+                amount  = 0.0f;
                 monthly = 0.0f;
-                yearly = 0.0f;
-                editId = 0;
-                //ComputeDependentValues(incomes, filename, "incomes");
+                yearly  = 0.0f;
+                editId  = 0;
+                incomeDate.loadedData = false;
+                incomeDate.loadedDates = false; // Reload dates to include new date if added
             }
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel Editting")) {
+        if (ImGui::Button("Cancel Update")) {
             source[0] = '\0';
             nrAnnualPayments = 0.0f;
-            amount = 0.0f;
+            amount  = 0.0f;
             monthly = 0.0f;
-            yearly = 0.0f;
-            editId = 0;
+            yearly  = 0.0f;
+            editId  = 0;
         }
     }
 
     ImGui::Separator();
     ImGui::Text("Summary of all Incomes:");
     if (ImGui::BeginTable("IncomeTableSummary", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
-        double totalYearly = 0.0, avgMonthly = 0.0;
-        load_from_json(totalYearly, "../budget.json", "incomes.totalYearly", "");
-        load_from_json(avgMonthly, "../budget.json", "incomes.avgMonthly", "");
-
-        ImGui::TableSetupColumn("Total Yearly (DKK)");
         ImGui::TableSetupColumn("Avg. Monthly (DKK)");
+        ImGui::TableSetupColumn("Total Yearly (DKK)");
         ImGui::TableHeadersRow();
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        ImGui::TextUnformatted(format_euro(totalYearly).c_str());
+        ImGui::TextUnformatted(format_euro(getTableMonthlyAvgIncome()).c_str());
         ImGui::TableSetColumnIndex(1);
-        ImGui::TextUnformatted(format_euro(avgMonthly).c_str());
+        ImGui::TextUnformatted(format_euro(getTableYearlyIncome()).c_str());
         ImGui::EndTable();
     }
 
     ImGui::Separator();
     ImGui::Text("All Incomes:");
-    // CreateTable<Income>("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes", SetEditIncome, nullptr);    
+    CreateTable<Income>("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes", id_to_date_income, SetUpdateIncome, SetDeleteIncome);    
     ImGui::Separator();
-    // ImGui::End();
+    ImGui::Separator();
+    ImGui::Separator();
 }
 
 template<typename T>
@@ -534,7 +554,7 @@ void BudgetManager::ShowExpenseInput() {
     static float yearly = 0.0f;
     static float amount = 0.0f;
     // Helper to copy expense data to input fields
-    auto SetEditExpense = [&](const Expense& exp) {
+    auto SetUpdateExpense = [&](const Expense& exp) {
         editId = exp.id;
         strncpy(source, exp.source.c_str(), sizeof(source) - 1);
         source[sizeof(source) - 1] = '\0';
@@ -685,7 +705,7 @@ void BudgetManager::ShowExpenseInput() {
     }
     ImGui::Separator();
     ImGui::Text("All Expenses:");
-    // CreateTable<Expense>("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses", SetEditExpense, nullptr);
+    // CreateTable<Expense>("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses", SetUpdateExpense, nullptr);
     ImGui::Separator();
     // ImGui::End();
 }

@@ -240,9 +240,11 @@ inline void load_from_json(T& out, const std::string& filename, const std::strin
             if (!found_any) {
                 merged = *ptr;
                 // Record id to date mapping for items with id
-                if (ptr->contains("id")) {
-                    int id = (*ptr)["id"].get<int>();
-                    id_to_date[id] = pair.first;
+                for (const auto& item : *ptr) {
+                    if (item.contains("id")) {
+                        int id = item["id"].get<int>();
+                        id_to_date[id] = pair.first;
+                    }
                 }
                 found_any = true;
             } else {
