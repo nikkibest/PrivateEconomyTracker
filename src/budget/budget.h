@@ -7,11 +7,9 @@
 #include "imgui.h"
 #include "implot.h"
 
-/* Add the status save feature*/
 
-/* The table should not show values with 0 amount.*/
 
-/* The table could also show when the field was last modified based on the seleted date*/
+
 /* The table should offer filtering options */
 
 struct PlotVisuals {
@@ -75,6 +73,8 @@ namespace budget {
         std::vector<BankBalance> bankBalance; 
         std::vector<Income> incomes;
         std::vector<Expense> expenses;
+
+        std::map<int, std::string> id_to_date_balance;
 
         // Balance parameters for table
         selectDateParams balanceDate;
@@ -189,7 +189,7 @@ namespace budget {
         void CreateComboWithDeleteAndAdd(std::vector<std::string>& item,  bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem);
         
         template<typename T>
-        void CreateTable(const char*  tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::function<void(const T&)> editCallback = nullptr, std::function<void(const T&)> deleteCallback = nullptr);
+        void CreateTable(const char*  tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::map<int, std::string>& id_to_date, std::function<void(const T&)> editCallback = nullptr, std::function<void(const T&)> deleteCallback = nullptr);
 
         template<typename T>
         void SelectDateUI(std::vector<T>& items, selectDateParams& dateParams, std::string itemName);

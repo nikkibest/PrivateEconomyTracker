@@ -184,11 +184,9 @@ void load_from_json_impl(T& out, nlohmann::json* ptr) {
 }
 
 // Loads from the latest entry in history, or a specific date if provided (date == "" means latest)
-// template<typename T>
-
 // New: Merge history entries in ascending date order, applying changes, additions, and deletions
 template<typename T>
-inline void load_from_json(T& out, const std::string& filename, const std::string& key, const std::string& date = "") {
+inline void load_from_json(T& out, const std::string& filename, const std::string& key, const std::string& date, std::map<int, std::string>& id_to_date) {
     std::ifstream file(filename);
     if (!file){
         std::cerr << "[ERROR] load_from_json: File '" << filename << "' does not exist.\n";
@@ -241,6 +239,11 @@ inline void load_from_json(T& out, const std::string& filename, const std::strin
             // If this is the first found, copy it
             if (!found_any) {
                 merged = *ptr;
+                // Record id to date mapping for items with id
+                if (ptr->contains("id")) {
+                    int id = (*ptr)["id"].get<int>();
+                    id_to_date[id] = pair.first;
+                }
                 found_any = true;
             } else {
                 // Merge/patch: for arrays, replace by id; for objects, update fields
@@ -253,6 +256,13 @@ inline void load_from_json(T& out, const std::string& filename, const std::strin
                     for (const auto& item : *ptr) {
                         if (item.contains("id")) by_id[item["id"].get<int>()] = item;
                         else by_id[-1] = item; // fallback for items without id
+                    }
+                    // Record id to date mapping for items with id
+                    for (const auto& item : *ptr) {
+                        if (item.contains("id")) {
+                            int id = item["id"].get<int>();
+                            id_to_date[id] = pair.first;
+                        }
                     }
                     merged = nlohmann::json::array();
                     for (const auto& kv : by_id) merged.push_back(kv.second);
@@ -273,6 +283,13 @@ inline void load_from_json(T& out, const std::string& filename, const std::strin
         out = T{};
     }
 }
+
+template<typename T>
+inline void load_from_json(T& out, const std::string& filename, const std::string& key, const std::string& date = "") {
+    std::map<int, std::string> id_to_date;
+    load_from_json(out, filename, key, date, id_to_date);
+}
+
 
 /*
 -------------------

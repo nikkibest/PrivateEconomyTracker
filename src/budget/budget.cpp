@@ -25,7 +25,7 @@ auto getDateStr = [](double time) -> std::string {
 
 namespace budget {
 BudgetManager::BudgetManager()
-    : balanceDate(), months(12)
+    : id_to_date_balance(), balanceDate(), months(12)
 {
     balanceDate.selectedDate = getToday();
     loadBalanceData();
@@ -83,6 +83,19 @@ void BudgetManager::SelectDateUI(std::vector<T>& items, selectDateParams& dP, st
                 dP.selectedDate = typedDate; // Don't update dateIdx unless it's a valid date
             }
         }
+        ImGui::SameLine();
+        if (ImGui::Button("Set Today's Date")) {
+            dP.selectedDate = getToday();
+            strncpy(dP.dateBuf, dP.selectedDate.c_str(), sizeof(dP.dateBuf)-1);
+            dP.dateBuf[sizeof(dP.dateBuf)-1] = '\0';
+            auto it3 = std::find(dP.allDates.begin(), dP.allDates.end(), dP.selectedDate);
+            if (it3 != dP.allDates.end()) {
+                dP.dateIdx = static_cast<int>(std::distance(dP.allDates.begin(), it3));
+            } else {
+                dP.dateIdx = static_cast<int>(dP.allDates.size())-1; // Set to last if today not found
+            }
+            dP.loadedData = false;
+        }
     } else {
         ImGui::Text("No dates available.");
     }
@@ -111,6 +124,7 @@ void BudgetManager::SelectDateUI(std::vector<T>& items, selectDateParams& dP, st
         ImGui::TextColored(ImVec4(0,1,0,1), "Status: %s", dP.status.c_str());
     } else if (dP.status == "tentative") {
         ImGui::TextColored(ImVec4(1,1,0,1), "Status: %s", dP.status.c_str());
+        ImGui::SameLine();
         if (ImGui::Button("Confirm This Status")) {
             save__to__json(items, filename, itemName, dP.allDates[dP.dateIdx], "confirmed");
             balanceDate.loadedData = false;
@@ -122,7 +136,7 @@ void BudgetManager::SelectDateUI(std::vector<T>& items, selectDateParams& dP, st
 
 void BudgetManager::loadBalanceData() {
     // Load bank balances for selected date
-    load_from_json(bankBalance, filename, "balance.balance", balanceDate.selectedDate);
+    load_from_json(bankBalance, filename, "balance.balance", balanceDate.selectedDate, id_to_date_balance);
     setTotalBalanceTable(0.0);
     balanceDate.allNames.clear();
     for (auto& b : bankBalance) {
@@ -267,10 +281,6 @@ void BudgetManager::ShowBankBalanceInput() {
             editId = 0;
         }
     }
-    ImGui::SameLine();
-    if (ImGui::Button("Confirm This Bank Balance")) {
-        // save__to__json(bankBalance, filename, "balance.balance");
-    }
     
     ImGui::Separator();
     ImGui::Text("Summary of all Bank Balances:");
@@ -285,7 +295,7 @@ void BudgetManager::ShowBankBalanceInput() {
 
     ImGui::Separator();
     ImGui::Text("All Bank Balances:");
-    CreateTable<BankBalance>("IncomeTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance", SetEditBalance, SetDeleteBalance);    
+    CreateTable<BankBalance>("BankBalanceTable", bankBalance, bankbalanceTableHeader, bankbalanceTableOrder, filename, "balance.balance", id_to_date_balance, SetEditBalance, SetDeleteBalance);    
     ImGui::Separator();
     // ImGui::End();
 }
@@ -410,7 +420,7 @@ void BudgetManager::ShowIncomeInput() {
 
     ImGui::Separator();
     ImGui::Text("All Incomes:");
-    CreateTable<Income>("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes", SetEditIncome, nullptr);    
+    // CreateTable<Income>("IncomeTable",incomes, incomeTableHeader, incomeTableOrder, filename, "incomes.incomes", SetEditIncome, nullptr);    
     ImGui::Separator();
     // ImGui::End();
 }
@@ -608,7 +618,7 @@ void BudgetManager::ShowExpenseInput() {
     }
     ImGui::Separator();
     ImGui::Text("All Expenses:");
-    CreateTable<Expense>("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses", SetEditExpense, nullptr);
+    // CreateTable<Expense>("ExpenseTable", expenses, expenseTableHeader, expenseTableOrder, filename, "expenses.expenses", SetEditExpense, nullptr);
     ImGui::Separator();
     // ImGui::End();
 }
@@ -675,20 +685,34 @@ void BudgetManager::CreateComboWithDeleteAndAdd(std::vector<std::string>& item, 
 }
 
 template<typename T>
-void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::function<void(const T&)> editCallback, std::function<void(const T&)> deleteCallback) {
+void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::map<int, std::string>& id_to_date, std::function<void(const T&)> editCallback, std::function<void(const T&)> deleteCallback) {
     // Add an extra column for Edit button
-    if (ImGui::BeginTable(tableName, tableHeaders.size() + 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+    if (ImGui::BeginTable(tableName, tableHeaders.size() + 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
         for (int i = 0; i < tableHeaders.size(); ++i) {
             ImGui::TableSetupColumn(tableHeaders[i].c_str());
         }
-        ImGui::TableSetupColumn("Edit");
+        ImGui::TableSetupColumn("Modified");
+        ImGui::TableSetupColumn("Update");
         ImGui::TableSetupColumn("Delete");
         ImGui::TableHeadersRow();
         // Loop over data and populate rows
         for (int i = 0; i < items.size(); ++i) {
             const auto& item = items[i];
-            ImGui::TableNextRow();
             nlohmann::json j = item; // Serialize struct to JSON
+            bool hasZeroAmount = false;
+            // Check if any field contains "amount" and its value is zero
+            for (auto it = j.begin(); it != j.end(); ++it) {
+                if (it.key().find("amount") != std::string::npos && it.value().is_number()) {
+                    if (it.value().get<double>() == 0.0) {
+                        hasZeroAmount = true;
+                        break; // Found a zero amount, no need to check further
+                    }
+                }
+            }
+            if (hasZeroAmount) {
+                continue; // Skip this row and jump to the next iteration
+            }
+            ImGui::TableNextRow();
             int col = 0;
             for (const auto& field : tableOrder) {
                 ImGui::TableSetColumnIndex(col++);
@@ -700,14 +724,22 @@ void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, co
                     ImGui::TextUnformatted("?");
                 }
             }
-            // Add an edit button in the last column
+            // Show last modified date in a new column
             ImGui::TableSetColumnIndex(tableHeaders.size());
-            std::string editLabel = "Edit##" + std::to_string(i);
+            auto it = id_to_date.find(item.id);
+            if (it != id_to_date.end()) {
+                ImGui::TextUnformatted(it->second.c_str());
+            } else {
+                ImGui::TextUnformatted("?");
+            }
+            // Add an edit button in the last column
+            ImGui::TableSetColumnIndex(tableHeaders.size()+1);
+            std::string editLabel = "Update##" + std::to_string(i);
             if (editCallback && ImGui::Button(editLabel.c_str())) {
                 editCallback(item);
             }
             // Add a delete button in a new column
-            ImGui::TableSetColumnIndex(tableHeaders.size()+1);
+            ImGui::TableSetColumnIndex(tableHeaders.size()+2);
             std::string btnLabel = "Delete##" + std::to_string(i);
             if (deleteCallback && ImGui::Button(btnLabel.c_str())) {
                 deleteCallback(item);
