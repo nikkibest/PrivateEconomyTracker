@@ -9,7 +9,7 @@
 
 
 
-
+/* Add Income and Expense categories */
 /* The table should offer filtering options */
 
 struct PlotVisuals {
@@ -36,7 +36,7 @@ struct selectDateParams {
     bool loadedData;
     char dateBuf[16]="";
     int  dateIdx;
-    selectDateParams() : loadedDates(false), loadedData(true) {}
+    selectDateParams() : dateIdx(-1), loadedDates(false), loadedData(true) {}
 };
 
 struct HoverParams {
@@ -74,20 +74,27 @@ namespace budget {
         std::vector<Income> incomes;
         std::vector<Expense> expenses;
 
-        std::map<int, std::string> id_to_date_balance;
+        std::map<int, std::string> id_to_date_balance, id_to_date_income, id_to_date_expense;
 
         // Balance parameters for table
-        selectDateParams balanceDate;
-        double totalBalanceTable = 0.0;
+        selectDateParams balanceDate, incomeDate, expenseDate;
+        double tableTotalBalance = 0.0;
+        double tableMonthlyAvgIncome  = 0.0, tableYearlyIncome  = 0.0;
+        double tableMonthlyAvgExpense = 0.0, tableYearlyExpense = 0.0;
         // Balance parameters for plot
-        std::vector<BankBalance> bankBalanceHist;
-        std::vector<std::string> balanceDatesHist;
-        std::vector<double> balanceHistTimes;
-        std::vector<double> balanceHistAmount;
-        std::vector<std::string> balanceStatusHist;
-        int nHistBalances = 0;
+        std::vector<BankBalance> histBankBalance;
+        std::vector<std::string> histBalanceDates;
+        std::vector<std::string> histBalanceStatus;
+        std::vector<double> histBalanceTimes;
+        std::vector<double> histBalanceAmount;
+        int histBalance_cnt = 0;
 
-        double monthlyAvgExpense = 0.0, monthlyAvgIncome = 0.0;
+        std::vector<Income> histIncome;
+        std::vector<std::string> histIncomeDates;
+        std::vector<std::string> histIncomeStatus;
+        std::vector<double> histIncomeTimes;
+        std::vector<double> histIncomeAmount;
+        int histIncome_cnt = 0;
 
         // Plot parameters
         int months;
@@ -113,8 +120,16 @@ namespace budget {
     public:
         BudgetManager();
         ~BudgetManager() = default;
-        double getTotalBalanceTable() const { return totalBalanceTable; }
-        void   setTotalBalanceTable(double value) { totalBalanceTable = value; }
+        void   setTableTotalBalance         (double value) { tableTotalBalance = value; }
+        void   setTableMonthlyAvgIncome     (double value) { tableMonthlyAvgIncome = value; }
+        void   setTableYearlyIncome         (double value) { tableYearlyIncome = value; }
+        void   setTableMonthlyAvgExpense    (double value) { tableMonthlyAvgExpense = value; }
+        void   setTableYearlyExpense        (double value) { tableYearlyExpense = value; }
+        double getTableTotalBalance()       const { return tableTotalBalance; }
+        double getTableMonthlyAvgIncome()   const { return tableMonthlyAvgIncome; }
+        double getTableYearlyIncome()       const { return tableYearlyIncome; }
+        double getTableMonthlyAvgExpense()  const { return tableMonthlyAvgExpense; }
+        double getTableYearlyExpense()      const { return tableYearlyExpense; }
         int  getMonths() const { return months; }
         void setMonths(int m) {
             months = m;
@@ -130,8 +145,8 @@ namespace budget {
             allCumulativeValues .resize(months*4, 0.0);
         }
         void updateMonthlyPlotValues() {
-            double monthlyAvgExpenseTmp = monthlyAvgExpense;
-            double monthlyAvgIncomeTmp  = monthlyAvgIncome;
+            double monthlyAvgIncomeTmp  = histIncomeAmount.empty() ? 0.0 : histIncomeAmount.back();
+            double monthlyAvgExpenseTmp = 0.0; // histBalanceAmount.empty() ? 0.0 : getTableMonthlyAvgExpense();
             surpassTargetIdx = -1;
             for (int i = 0; i < months; ++i) {
                 monthlyExpenses     [i]   = monthlyAvgExpenseTmp;
@@ -140,7 +155,7 @@ namespace budget {
                 cumulativeExpenses  [i]   = monthlyAvgExpenseTmp * (i);
                 cumulativeIncomes   [i]   = monthlyAvgIncomeTmp  * (i);
                 cumulativeDifference[i]   = cumulativeIncomes[i] - cumulativeExpenses[i];
-                cumulativeBalance   [i]   = balanceHistAmount.back() + cumulativeDifference[i];
+                cumulativeBalance   [i]   = histBalanceAmount.back() + cumulativeDifference[i];
                 timeMonths          [i]   = now + i * 30.0 * 24.0 * 3600.0; // Approximate month as 30 days
                 if (i%12==0 && i!=0) {
                     // Apply inflation adjustment at the end of each year
@@ -165,19 +180,20 @@ namespace budget {
 
             double minCumulative = *std::min_element(allCumulativeValues.begin(), allCumulativeValues.end());
             double maxCumulative = *std::max_element(allCumulativeValues.begin(), allCumulativeValues.end());
-            double minHistory = balanceHistAmount.empty() ? minCumulative : *std::min_element(balanceHistAmount.begin(), balanceHistAmount.end());
-            double maxHistory = balanceHistAmount.empty() ? maxCumulative : *std::max_element(balanceHistAmount.begin(), balanceHistAmount.end());
+            double minHistory = histBalanceAmount.empty() ? minCumulative : *std::min_element(histBalanceAmount.begin(), histBalanceAmount.end());
+            double maxHistory = histBalanceAmount.empty() ? maxCumulative : *std::max_element(histBalanceAmount.begin(), histBalanceAmount.end());
             p2.Ymin = std::min(minCumulative, minHistory);
             p2.Ymax = std::max(maxCumulative, maxHistory);
             p2.Yrange  = p2.Ymax - p2.Ymin;
             p2.Ymargin = p2.Yrange * 0.05;
-            p2.Xmin    = balanceHistTimes.empty() ? timeMonths.front() : balanceHistTimes.front();
+            p2.Xmin    = histBalanceTimes.empty() ? timeMonths.front() : histBalanceTimes.front();
             p2.Xmax    = timeMonths.back();
             p2.Xrange  = p2.Xmax - p2.Xmin;
         }
 
-        // auto getToday();
         void loadBalanceData();
+        void loadIncomeData();
+        void loadExpenseData();
         void ShowBankBalanceInput();
         void ShowIncomeInput();
         void ShowExpenseInput();
