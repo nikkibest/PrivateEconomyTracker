@@ -49,21 +49,20 @@ struct Expense {
     std::string source;
     std::string category;
     std::string person;
-    std::string typeExpense;
     std::string typeAccount;
     double nrAnnualPayments;
     double amountNet;
     double amountNet_month;
     double amountNet_year;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeExpense, typeAccount);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeAccount);
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeAccount);
 };
 inline std::vector<std::string> expenseTableHeader = {
-    "Source", "Category", "Person", "Type", "Account", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)"
+    "Source", "Category", "Person", "Account", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)"
 };
 inline std::vector<std::string> expenseTableOrder = {
-    "source", "category", "person", "typeExpense", "typeAccount", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"
+    "source", "category", "person", "typeAccount", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"
 };
 
 // Type trait to check if a type is a std::vector

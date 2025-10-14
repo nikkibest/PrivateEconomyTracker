@@ -40,8 +40,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Alle",
                         "source": "Husleje",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 668.0,
@@ -52,8 +51,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Alle",
                         "source": "Tryg Indboforsikring (IDA)",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 603.0,
@@ -64,8 +62,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Alle",
                         "source": "Tryg Årsrejseforsikring (IDA)",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 200.0,
@@ -76,8 +73,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Skattimus",
                         "source": "Boligforening i Aalborg",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 4223.0,
@@ -88,8 +84,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Alle",
                         "source": "Bilforsikring (IDA)",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 169.0,
@@ -100,8 +95,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Skatti",
                         "source": "Spotify",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Forbrug"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 79.0,
@@ -112,8 +106,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Skattimus",
                         "source": "Disney Plus",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Forbrug"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 45.0,
@@ -124,8 +117,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Skatti",
                         "source": "HBO Max",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Forbrug"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 300.0,
@@ -136,8 +128,7 @@
                         "nrAnnualPayments": 2.0,
                         "person": "Alle",
                         "source": "Dækskifte",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 710.0,
@@ -148,8 +139,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Alle",
                         "source": "Grøn ejerafgift",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 3388.0,
@@ -160,8 +150,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Kayla",
                         "source": "IDA Hundeforsikring",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 200.0,
@@ -172,8 +161,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Kayla",
                         "source": "Dækopbevaring",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 774.0,
@@ -184,8 +172,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Skatti",
                         "source": "Ulykkeforsikring (IDA)",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 124.0,
@@ -196,8 +183,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Skatti",
                         "source": "CallMe",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 391.0,
@@ -208,8 +194,7 @@
                         "nrAnnualPayments": 4.0,
                         "person": "Skatti",
                         "source": "Sygeforsikring Danmark",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 878.0,
@@ -220,8 +205,7 @@
                         "nrAnnualPayments": 4.0,
                         "person": "Skatti",
                         "source": "IDA Ingeniørforening",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 1401.0,
@@ -232,8 +216,7 @@
                         "nrAnnualPayments": 4.0,
                         "person": "Skatti",
                         "source": "A-kassen Akademikernes",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 2565.0,
@@ -244,8 +227,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Skatti",
                         "source": "Aalborg Danse Center",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Forbrug"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 795.0,
@@ -256,8 +238,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Skattimus",
                         "source": "Ulykkeforsikring (IDA)",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 350.0,
@@ -268,8 +249,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Skattimus",
                         "source": "Kontaklinser",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 140.0,
@@ -280,8 +260,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Skattimus",
                         "source": "CallMe",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 125.0,
@@ -292,8 +271,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Skattimus",
                         "source": "Ungdomsbo",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 878.0,
@@ -304,8 +282,7 @@
                         "nrAnnualPayments": 4.0,
                         "person": "Skattimus",
                         "source": "IDA Ingeniørforening",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 1401.0,
@@ -316,8 +293,7 @@
                         "nrAnnualPayments": 4.0,
                         "person": "Skattimus",
                         "source": "A-kassen Akademikernes",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 2565.0,
@@ -328,8 +304,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Skattimus",
                         "source": "Aalborg Danse Center",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Forbrug"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 380.0,
@@ -340,8 +315,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Skattimus",
                         "source": "Yoga huset",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Forbrug"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 300.0,
@@ -352,8 +326,7 @@
                         "nrAnnualPayments": 32.0,
                         "person": "Skatti",
                         "source": "Julegaver+føds gaver",
-                        "typeAccount": "Budgetkonto",
-                        "typeExpense": "Forbrug"
+                        "typeAccount": "Budgetkonto"
                     },
                     {
                         "amountNet": 20000.0,
@@ -364,8 +337,7 @@
                         "nrAnnualPayments": 2.0,
                         "person": "Alle",
                         "source": "Ferie opsparing",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 400.0,
@@ -376,8 +348,7 @@
                         "nrAnnualPayments": 4.0,
                         "person": "Alle",
                         "source": "Tandlæge",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 300.0,
@@ -388,8 +359,7 @@
                         "nrAnnualPayments": 4.0,
                         "person": "Alle",
                         "source": "Rejsekort",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 2000.0,
@@ -400,8 +370,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Alle",
                         "source": "Restaurant/take-away",
-                        "typeAccount": "Forbrugskonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Forbrugskonto"
                     },
                     {
                         "amountNet": 4000.0,
@@ -412,8 +381,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Alle",
                         "source": "Dagligvarer",
-                        "typeAccount": "Forbrugskonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Forbrugskonto"
                     },
                     {
                         "amountNet": 2500.0,
@@ -424,8 +392,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Alle",
                         "source": "Benzin",
-                        "typeAccount": "Forbrugskonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Forbrugskonto"
                     },
                     {
                         "amountNet": 250.0,
@@ -436,8 +403,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Alle",
                         "source": "Servicesyn",
-                        "typeAccount": "Forbrugskonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Forbrugskonto"
                     },
                     {
                         "amountNet": 600.0,
@@ -448,8 +414,7 @@
                         "nrAnnualPayments": 12.0,
                         "person": "Kayla",
                         "source": "Tørfoder+Godbidder",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 4500.0,
@@ -460,8 +425,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Kayla",
                         "source": "Dyrlæge+vaccinationer",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 700.0,
@@ -472,8 +436,7 @@
                         "nrAnnualPayments": 2.0,
                         "person": "Kayla",
                         "source": "Pleje, grooming, negle",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     },
                     {
                         "amountNet": 700.0,
@@ -484,8 +447,7 @@
                         "nrAnnualPayments": 1.0,
                         "person": "Kayla",
                         "source": "Diverse",
-                        "typeAccount": "Lønkonto",
-                        "typeExpense": "Must"
+                        "typeAccount": "Lønkonto"
                     }
                 ]
             },
@@ -495,33 +457,17 @@
                         "amountNet": 30748.0,
                         "amountNet_month": 30748.0,
                         "amountNet_year": 368976.0,
+                        "id": 16,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejet løn"
+                    },
+                    {
+                        "amountNet": 11344.0,
+                        "amountNet_month": 11344.0,
+                        "amountNet_year": 136128.0,
                         "id": 1,
                         "nrAnnualPayments": 12.0,
-                        "source": "TeeJet Salary"
-                    },
-                    {
-                        "amountNet": 20303.0,
-                        "amountNet_month": 1691.9166259765625,
-                        "amountNet_year": 20303.0,
-                        "id": 2,
-                        "nrAnnualPayments": 1.0,
-                        "source": "TeeJet Bonus"
-                    },
-                    {
-                        "amountNet": 140.0,
-                        "amountNet_month": 140.0,
-                        "amountNet_year": 1680.0,
-                        "id": 3,
-                        "nrAnnualPayments": 12.0,
-                        "source": "TeeJet 30% fradrag A-kasse"
-                    },
-                    {
-                        "amountNet": 29950.0,
-                        "amountNet_month": 29950.0,
-                        "amountNet_year": 359400.0,
-                        "id": 4,
-                        "nrAnnualPayments": 12.0,
-                        "source": "Kruger Salary"
+                        "source": "Dagpenge"
                     },
                     {
                         "amountNet": 140.0,
@@ -532,18 +478,122 @@
                         "source": "Kruger 30% fradrag A-kasse"
                     },
                     {
-                        "amountNet": 1000.0,
-                        "amountNet_month": 83.33333587646484,
-                        "amountNet_year": 1000.0,
-                        "id": 6,
-                        "nrAnnualPayments": 1.0,
-                        "source": "Danmark forsikring"
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 8,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 9,
+                        "nrAnnualPayments": 0.0,
+                        "source": "SU Skatti"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 10,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 11,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 12,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Boligstøtte"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 13,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 14,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 15,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Dogley"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 17,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejeet 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 29950.0,
+                        "amountNet_month": 29950.0,
+                        "amountNet_year": 359400.0,
+                        "id": 18,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger Ingeniør løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 19,
+                        "nrAnnualPayments": 0.0,
+                        "source": "GoMore"
                     },
                     {
                         "amountNet": 1000.0,
                         "amountNet_month": 83.33333587646484,
                         "amountNet_year": 1000.0,
-                        "id": 7,
+                        "id": 20,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Danmark"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 21,
+                        "nrAnnualPayments": 0.0,
+                        "source": "GuDog"
+                    },
+                    {
+                        "amountNet": 20000.0,
+                        "amountNet_month": 1666.6666259765625,
+                        "amountNet_year": 20000.0,
+                        "id": 22,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Teejet bonus"
+                    },
+                    {
+                        "amountNet": 1000.0,
+                        "amountNet_month": 83.33333587646484,
+                        "amountNet_year": 1000.0,
+                        "id": 23,
                         "nrAnnualPayments": 1.0,
                         "source": "Forbrugsforeningen"
                     }
@@ -573,6 +623,122 @@
                 ]
             },
             "date": "2023-09-01",
+            "incomes": {
+                "incomes": [
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 8,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 13,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 15,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Dogley"
+                    },
+                    {
+                        "amountNet": 29531.0,
+                        "amountNet_month": 29531.0,
+                        "amountNet_year": 354372.0,
+                        "id": 16,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejet løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 14,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 17,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejeet 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 23957.0,
+                        "amountNet_month": 23957.0,
+                        "amountNet_year": 287484.0,
+                        "id": 18,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger Ingeniør løn"
+                    },
+                    {
+                        "amountNet": 1263.0,
+                        "amountNet_month": 105.25,
+                        "amountNet_year": 1263.0,
+                        "id": 19,
+                        "nrAnnualPayments": 1.0,
+                        "source": "GoMore"
+                    },
+                    {
+                        "amountNet": 1000.0,
+                        "amountNet_month": 83.33333587646484,
+                        "amountNet_year": 1000.0,
+                        "id": 20,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Danmark"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 5,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 9,
+                        "nrAnnualPayments": 0.0,
+                        "source": "SU Skatti"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 10,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 11,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 12,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Boligstøtte"
+                    }
+                ]
+            },
             "status": "confirmed"
         },
         {
@@ -663,6 +829,146 @@
                 ]
             },
             "date": "2025-03-01",
+            "incomes": {
+                "incomes": [
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 18,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Kruger Ingeniør løn"
+                    },
+                    {
+                        "amountNet": 30454.0,
+                        "amountNet_month": 30454.0,
+                        "amountNet_year": 365448.0,
+                        "id": 16,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejet løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 19,
+                        "nrAnnualPayments": 0.0,
+                        "source": "GoMore"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 21,
+                        "nrAnnualPayments": 0.0,
+                        "source": "GuDog"
+                    },
+                    {
+                        "amountNet": 11344.0,
+                        "amountNet_month": 11344.0,
+                        "amountNet_year": 136128.0,
+                        "id": 1,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Dagpenge"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 5,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 8,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 9,
+                        "nrAnnualPayments": 0.0,
+                        "source": "SU Skatti"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 10,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 11,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 12,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Boligstøtte"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 13,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 14,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 15,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Dogley"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 17,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejeet 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 1000.0,
+                        "amountNet_month": 83.33333587646484,
+                        "amountNet_year": 1000.0,
+                        "id": 20,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Danmark"
+                    },
+                    {
+                        "amountNet": 20000.0,
+                        "amountNet_month": 1666.6666259765625,
+                        "amountNet_year": 20000.0,
+                        "id": 22,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Teejet bonus"
+                    }
+                ]
+            },
             "status": "confirmed"
         },
         {
@@ -681,6 +987,486 @@
                 ]
             },
             "date": "2025-05-01",
+            "status": "confirmed"
+        },
+        {
+            "date": "2021-01-01",
+            "incomes": {
+                "incomes": [
+                    {
+                        "amountNet": 18550.0,
+                        "amountNet_month": 18550.0,
+                        "amountNet_year": 222600.0,
+                        "id": 8,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 5,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 5082.0,
+                        "amountNet_month": 5082.0,
+                        "amountNet_year": 60984.0,
+                        "id": 9,
+                        "nrAnnualPayments": 12.0,
+                        "source": "SU Skatti"
+                    },
+                    {
+                        "amountNet": 3000.0,
+                        "amountNet_month": 3000.0,
+                        "amountNet_year": 36000.0,
+                        "id": 10,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 7563.0,
+                        "amountNet_month": 630.25,
+                        "amountNet_year": 7563.0,
+                        "id": 11,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 945.0,
+                        "amountNet_month": 945.0,
+                        "amountNet_year": 11340.0,
+                        "id": 12,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Boligstøtte"
+                    }
+                ]
+            },
+            "status": "confirmed"
+        },
+        {
+            "date": "2022-01-01",
+            "incomes": {
+                "incomes": [
+                    {
+                        "amountNet": 22000.0,
+                        "amountNet_month": 22000.0,
+                        "amountNet_year": 264000.0,
+                        "id": 8,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 5,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 10,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 11,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 12,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Boligstøtte"
+                    },
+                    {
+                        "amountNet": 5082.0,
+                        "amountNet_month": 5082.0,
+                        "amountNet_year": 60984.0,
+                        "id": 9,
+                        "nrAnnualPayments": 12.0,
+                        "source": "SU Skatti"
+                    }
+                ]
+            },
+            "status": "confirmed"
+        },
+        {
+            "date": "2022-09-01",
+            "incomes": {
+                "incomes": [
+                    {
+                        "amountNet": 20200.0,
+                        "amountNet_month": 20200.0,
+                        "amountNet_year": 242400.0,
+                        "id": 8,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 9,
+                        "nrAnnualPayments": 0.0,
+                        "source": "SU Skatti"
+                    },
+                    {
+                        "amountNet": 23000.0,
+                        "amountNet_month": 23000.0,
+                        "amountNet_year": 276000.0,
+                        "id": 13,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Grundfos løn"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 14,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Grundfos 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 100.0,
+                        "amountNet_month": 100.0,
+                        "amountNet_year": 1200.0,
+                        "id": 15,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Dogley"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 5,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 10,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 11,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 12,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Boligstøtte"
+                    }
+                ]
+            },
+            "status": "confirmed"
+        },
+        {
+            "date": "2024-01-01",
+            "incomes": {
+                "incomes": [
+                    {
+                        "amountNet": 500.0,
+                        "amountNet_month": 125.0,
+                        "amountNet_year": 1500.0,
+                        "id": 21,
+                        "nrAnnualPayments": 3.0,
+                        "source": "GuDog"
+                    },
+                    {
+                        "amountNet": 20000.0,
+                        "amountNet_month": 1666.6666259765625,
+                        "amountNet_year": 20000.0,
+                        "id": 22,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Teejet bonus"
+                    },
+                    {
+                        "amountNet": 30454.0,
+                        "amountNet_month": 30454.0,
+                        "amountNet_year": 365448.0,
+                        "id": 16,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejet løn"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 5,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 8,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 9,
+                        "nrAnnualPayments": 0.0,
+                        "source": "SU Skatti"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 10,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 11,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 12,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Boligstøtte"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 13,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 14,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 15,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Dogley"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 17,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejeet 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 23957.0,
+                        "amountNet_month": 23957.0,
+                        "amountNet_year": 287484.0,
+                        "id": 18,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger Ingeniør løn"
+                    },
+                    {
+                        "amountNet": 1263.0,
+                        "amountNet_month": 105.25,
+                        "amountNet_year": 1263.0,
+                        "id": 19,
+                        "nrAnnualPayments": 1.0,
+                        "source": "GoMore"
+                    },
+                    {
+                        "amountNet": 1000.0,
+                        "amountNet_month": 83.33333587646484,
+                        "amountNet_year": 1000.0,
+                        "id": 20,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Danmark"
+                    }
+                ]
+            },
+            "status": "confirmed"
+        },
+        {
+            "date": "2025-04-01",
+            "incomes": {
+                "incomes": [
+                    {
+                        "amountNet": 1000.0,
+                        "amountNet_month": 83.33333587646484,
+                        "amountNet_year": 1000.0,
+                        "id": 23,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Forbrugsforeningen"
+                    },
+                    {
+                        "amountNet": 29950.0,
+                        "amountNet_month": 29950.0,
+                        "amountNet_year": 359400.0,
+                        "id": 18,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger Ingeniør løn"
+                    },
+                    {
+                        "amountNet": 11344.0,
+                        "amountNet_month": 11344.0,
+                        "amountNet_year": 136128.0,
+                        "id": 1,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Dagpenge"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 5,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Kruger 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 8,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Kruger PhD løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 9,
+                        "nrAnnualPayments": 0.0,
+                        "source": "SU Skatti"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 10,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Petur Larsen Studiejob"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 11,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Hjælpelærer Brush-up kursus"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 12,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Boligstøtte"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 13,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos løn"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 14,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Grundfos 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 15,
+                        "nrAnnualPayments": 0.0,
+                        "source": "Dogley"
+                    },
+                    {
+                        "amountNet": 30454.0,
+                        "amountNet_month": 30454.0,
+                        "amountNet_year": 365448.0,
+                        "id": 16,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejet løn"
+                    },
+                    {
+                        "amountNet": 140.0,
+                        "amountNet_month": 140.0,
+                        "amountNet_year": 1680.0,
+                        "id": 17,
+                        "nrAnnualPayments": 12.0,
+                        "source": "Teejeet 30% fradrag A-kasse"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 19,
+                        "nrAnnualPayments": 0.0,
+                        "source": "GoMore"
+                    },
+                    {
+                        "amountNet": 1000.0,
+                        "amountNet_month": 83.33333587646484,
+                        "amountNet_year": 1000.0,
+                        "id": 20,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Danmark"
+                    },
+                    {
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
+                        "id": 21,
+                        "nrAnnualPayments": 0.0,
+                        "source": "GuDog"
+                    },
+                    {
+                        "amountNet": 20000.0,
+                        "amountNet_month": 1666.6666259765625,
+                        "amountNet_year": 20000.0,
+                        "id": 22,
+                        "nrAnnualPayments": 1.0,
+                        "source": "Teejet bonus"
+                    }
+                ]
+            },
             "status": "confirmed"
         }
     ]

@@ -65,6 +65,26 @@ struct HoverParams {
     }
 };
 
+template<typename T>
+struct HistoryEntry {
+    std::vector<T> entry;
+    std::vector<std::string> dates;
+    std::vector<std::string> status;
+    std::vector<double> times;
+    std::vector<double> amount;
+    int cnt = 0;
+
+    // Default constructor
+    HistoryEntry() = default;
+    void clear() {
+        dates.clear();
+        status.clear();
+        times.clear();
+        amount.clear();
+        cnt = 0;
+    }
+};
+
 namespace budget {
     // BudgetManager class to manage totalBalance
     class BudgetManager {
@@ -82,19 +102,9 @@ namespace budget {
         double tableMonthlyAvgIncome  = 0.0, tableYearlyIncome  = 0.0;
         double tableMonthlyAvgExpense = 0.0, tableYearlyExpense = 0.0;
         // Balance parameters for plot
-        std::vector<BankBalance> histBankBalance;
-        std::vector<std::string> histBalanceDates;
-        std::vector<std::string> histBalanceStatus;
-        std::vector<double> histBalanceTimes;
-        std::vector<double> histBalanceAmount;
-        int histBalance_cnt = 0;
-
-        std::vector<Income> histIncome;
-        std::vector<std::string> histIncomeDates;
-        std::vector<std::string> histIncomeStatus;
-        std::vector<double> histIncomeTimes;
-        std::vector<double> histIncomeAmount;
-        int histIncome_cnt = 0;
+        HistoryEntry<BankBalance> histBalance;
+        HistoryEntry<Income> histIncome;
+        HistoryEntry<Expense> histExpense;
 
         // Plot parameters
         int months;
@@ -113,9 +123,8 @@ namespace budget {
         std::vector<double> timeMonths;
         std::vector<double> allMonthlyValues;
         std::vector<double> allCumulativeValues;
-        PlotParams p1;
-        PlotParams p2;
-        HoverParams p2_hover;
+        PlotParams p1, p2;
+        HoverParams p1_hover, p2_hover;
         PlotVisuals plotVisuals;
     public:
         BudgetManager();
@@ -145,8 +154,8 @@ namespace budget {
             allCumulativeValues .resize(months*4, 0.0);
         }
         void updateMonthlyPlotValues() {
-            double monthlyAvgIncomeTmp  = histIncomeAmount.empty() ? 0.0 : histIncomeAmount.back();
-            double monthlyAvgExpenseTmp = 0.0; // histBalanceAmount.empty() ? 0.0 : getTableMonthlyAvgExpense();
+            double monthlyAvgIncomeTmp  = histIncome.amount.empty() ? 0.0 : histIncome.amount.back();
+            double monthlyAvgExpenseTmp = histExpense.amount.empty() ? 0.0 : histExpense.amount.back();
             surpassTargetIdx = -1;
             for (int i = 0; i < months; ++i) {
                 monthlyExpenses     [i]   = monthlyAvgExpenseTmp;
@@ -155,7 +164,7 @@ namespace budget {
                 cumulativeExpenses  [i]   = monthlyAvgExpenseTmp * (i);
                 cumulativeIncomes   [i]   = monthlyAvgIncomeTmp  * (i);
                 cumulativeDifference[i]   = cumulativeIncomes[i] - cumulativeExpenses[i];
-                cumulativeBalance   [i]   = histBalanceAmount.back() + cumulativeDifference[i];
+                cumulativeBalance   [i]   = histBalance.amount.back() + cumulativeDifference[i];
                 timeMonths          [i]   = now + i * 30.0 * 24.0 * 3600.0; // Approximate month as 30 days
                 if (i%12==0 && i!=0) {
                     // Apply inflation adjustment at the end of each year
@@ -169,24 +178,31 @@ namespace budget {
             allMonthlyValues.insert(allMonthlyValues.end(), monthlyExpenses.begin(), monthlyExpenses.end());
             allMonthlyValues.insert(allMonthlyValues.end(), monthlyIncomes.begin() , monthlyIncomes.end());
             allMonthlyValues.insert(allMonthlyValues.end(), monthlyBalance.begin() , monthlyBalance.end());
-            p1.Ymax    = *std::max_element(allMonthlyValues.begin(), allMonthlyValues.end());
-            p1.Yrange  = p1.Ymax - 0;
+            double min = *std::min_element(allMonthlyValues.begin(), allMonthlyValues.end());
+            double max = *std::max_element(allMonthlyValues.begin(), allMonthlyValues.end());
+            double minHistory = histIncome.amount.empty() ? min : *std::min_element(histIncome.amount.begin(), histIncome.amount.end());
+            double maxHistory = histIncome.amount.empty() ? max : *std::max_element(histIncome.amount.begin(), histIncome.amount.end());
+            p1.Ymin    = std::min(min, minHistory);
+            p1.Ymax    = std::max(max, maxHistory);
+            p1.Yrange  = p1.Ymax - p1.Ymin; 
             p1.Ymargin = p1.Yrange * 0.05;
+            p1.Xmin    = histIncome.times.empty() ? timeMonths.front() : histIncome.times.front();
+            p1.Xmax    = timeMonths.back();
+            p1.Xrange  = p1.Xmax - p1.Xmin;
 
             allCumulativeValues.insert(allCumulativeValues.end(), cumulativeExpenses.begin(), cumulativeExpenses.end());
             allCumulativeValues.insert(allCumulativeValues.end(), cumulativeIncomes.begin(), cumulativeIncomes.end());
             allCumulativeValues.insert(allCumulativeValues.end(), cumulativeDifference.begin(), cumulativeDifference.end());
             allCumulativeValues.insert(allCumulativeValues.end(), cumulativeBalance.begin(), cumulativeBalance.end());
-
-            double minCumulative = *std::min_element(allCumulativeValues.begin(), allCumulativeValues.end());
-            double maxCumulative = *std::max_element(allCumulativeValues.begin(), allCumulativeValues.end());
-            double minHistory = histBalanceAmount.empty() ? minCumulative : *std::min_element(histBalanceAmount.begin(), histBalanceAmount.end());
-            double maxHistory = histBalanceAmount.empty() ? maxCumulative : *std::max_element(histBalanceAmount.begin(), histBalanceAmount.end());
-            p2.Ymin = std::min(minCumulative, minHistory);
-            p2.Ymax = std::max(maxCumulative, maxHistory);
+            min = *std::min_element(allCumulativeValues.begin(), allCumulativeValues.end());
+            max = *std::max_element(allCumulativeValues.begin(), allCumulativeValues.end());
+            minHistory = histBalance.amount.empty() ? min : *std::min_element(histBalance.amount.begin(), histBalance.amount.end());
+            maxHistory = histBalance.amount.empty() ? max : *std::max_element(histBalance.amount.begin(), histBalance.amount.end());
+            p2.Ymin = std::min(min, minHistory);
+            p2.Ymax = std::max(max, maxHistory);
             p2.Yrange  = p2.Ymax - p2.Ymin;
             p2.Ymargin = p2.Yrange * 0.05;
-            p2.Xmin    = histBalanceTimes.empty() ? timeMonths.front() : histBalanceTimes.front();
+            p2.Xmin    = histBalance.times.empty() ? timeMonths.front() : histBalance.times.front();
             p2.Xmax    = timeMonths.back();
             p2.Xrange  = p2.Xmax - p2.Xmin;
         }
@@ -198,6 +214,9 @@ namespace budget {
         void ShowIncomeInput();
         void ShowExpenseInput();
         void PlotBudget();
+        void PlotPieCharts();
+        template<typename T>
+        void addScatterAndHover(HistoryEntry<T>& entry, PlotParams& p, HoverParams& p_hover);
 
         template<typename T>
         void ComputeDependentValues(std::vector<T>& items, const std::string filename, const std::string keyStart, const std::string& date, const std::string& status);
