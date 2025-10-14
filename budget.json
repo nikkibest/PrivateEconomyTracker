@@ -462,11 +462,11 @@
                         "source": "Teejet løn"
                     },
                     {
-                        "amountNet": 11344.0,
-                        "amountNet_month": 11344.0,
-                        "amountNet_year": 136128.0,
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
                         "id": 1,
-                        "nrAnnualPayments": 12.0,
+                        "nrAnnualPayments": 0.0,
                         "source": "Dagpenge"
                     },
                     {
@@ -1338,11 +1338,11 @@
                         "source": "Kruger Ingeniør løn"
                     },
                     {
-                        "amountNet": 11344.0,
-                        "amountNet_month": 11344.0,
-                        "amountNet_year": 136128.0,
+                        "amountNet": 0.0,
+                        "amountNet_month": 0.0,
+                        "amountNet_year": 0.0,
                         "id": 1,
-                        "nrAnnualPayments": 12.0,
+                        "nrAnnualPayments": 0.0,
                         "source": "Dagpenge"
                     },
                     {

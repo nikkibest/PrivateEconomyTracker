@@ -990,12 +990,9 @@ void BudgetManager::addScatterAndHover(HistoryEntry<T>& entry, PlotParams& p, Ho
     }
 }
 
-
-
 void BudgetManager::PlotPieCharts() {
     ImGui::Text("Pie Chart Distribution of Incomes and Expenses:");
     static ImPlotPieChartFlags flags = ImPlotPieChartFlags_Normalize|ImPlotPieChartFlags_IgnoreHidden|ImPlotPieChartFlags_Exploding;
-    // Aggregation mode selection
     enum AggregationMode { ByCategory = 0, ByPerson, ByTypeAccount };
     static int aggregationMode = 0;
     ImGui::Text("Aggregate Expenses Pie Chart By:");
@@ -1004,11 +1001,13 @@ void BudgetManager::PlotPieCharts() {
     ImGui::RadioButton("TypeAccount", &aggregationMode, ByTypeAccount);
 
     if (ImPlot::BeginSubplots("Income and Expenses Pie Charts", 1, 2, ImVec2(-1,600))) {
-    if (ImPlot::BeginPlot("Monthly Incomes Pie")) {
-            // Prepare data
+        if (ImPlot::BeginPlot("Monthly Incomes Pie")) {
             std::vector<const char*> labels;
             std::vector<double> values;
             for (const auto& income : incomes) {
+                if (income.amountNet_month == 0.0) {
+                    continue; // Skip zero amounts
+                }
                 labels.push_back(income.source.c_str());
                 values.push_back(income.amountNet_month);
             }
@@ -1019,7 +1018,7 @@ void BudgetManager::PlotPieCharts() {
             ImPlot::EndPlot();
         }
 
-    if (ImPlot::BeginPlot("Monthly Expenses Pie")) {
+        if (ImPlot::BeginPlot("Monthly Expenses Pie")) {
             // Prepare data
             std::map<std::string, double> groupTotals;
             for (const auto& expense : expenses) {
