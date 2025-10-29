@@ -93,6 +93,8 @@ namespace budget {
         std::vector<BankBalance> bankBalance; 
         std::vector<Income> incomes;
         std::vector<Expense> expenses;
+        std::vector<ExpenseItems> expenseCategories;
+        std::vector<ExpenseItems> expensePersons;
 
         std::map<int, std::string> id_to_date_balance, id_to_date_income, id_to_date_expense;
 
@@ -164,7 +166,8 @@ namespace budget {
                 cumulativeExpenses  [i]   = monthlyAvgExpenseTmp * (i);
                 cumulativeIncomes   [i]   = monthlyAvgIncomeTmp  * (i);
                 cumulativeDifference[i]   = cumulativeIncomes[i] - cumulativeExpenses[i];
-                cumulativeBalance   [i]   = histBalance.amount.back() + cumulativeDifference[i];
+                double baseBalance = histBalance.amount.empty() ? 0.0 : histBalance.amount.back();
+                cumulativeBalance   [i]   = baseBalance + cumulativeDifference[i];
                 timeMonths          [i]   = now + i * 30.0 * 24.0 * 3600.0; // Approximate month as 30 days
                 if (i%12==0 && i!=0) {
                     // Apply inflation adjustment at the end of each year
@@ -218,11 +221,8 @@ namespace budget {
         template<typename T>
         void addScatterAndHover(HistoryEntry<T>& entry, PlotParams& p, HoverParams& p_hover);
 
-        template<typename T>
-        void ComputeDependentValues(std::vector<T>& items, const std::string filename, const std::string keyStart, const std::string& date, const std::string& status);
+        void CreateComboWithDeleteAndAdd(std::vector<ExpenseItems>& item,  bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem);
 
-        void CreateComboWithDeleteAndAdd(std::vector<std::string>& item,  bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem);
-        
         template<typename T>
         void CreateTable(const char*  tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::map<int, std::string>& id_to_date, std::function<void(const T&)> editCallback = nullptr, std::function<void(const T&)> deleteCallback = nullptr);
 

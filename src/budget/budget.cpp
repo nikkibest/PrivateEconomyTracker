@@ -96,33 +96,31 @@ void BudgetManager::SelectDateUI(std::vector<T>& items, selectDateParams& dP, st
             dP.dateBuf[sizeof(dP.dateBuf)-1] = '\0';
             dP.loadedData = false;
         }
-        ImGui::SetNextItemWidth(120);
-        if (ImGui::InputText("Type or Paste Date (YYYY-MM-DD)", dP.dateBuf, sizeof(dP.dateBuf))) {
-            std::string typedDate(dP.dateBuf);
-            auto it2 = std::find(dP.allDates.begin(), dP.allDates.end(), typedDate);
-            if (it2 != dP.allDates.end()) {
-                dP.dateIdx = static_cast<int>(std::distance(dP.allDates.begin(), it2));
-                dP.selectedDate = *it2;
-                dP.loadedData = false;
-            } else {
-                dP.selectedDate = typedDate; // Don't update dateIdx unless it's a valid date
-            }
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Set Today's Date")) {
-            dP.selectedDate = getToday();
-            strncpy(dP.dateBuf, dP.selectedDate.c_str(), sizeof(dP.dateBuf)-1);
-            dP.dateBuf[sizeof(dP.dateBuf)-1] = '\0';
-            auto it3 = std::find(dP.allDates.begin(), dP.allDates.end(), dP.selectedDate);
-            if (it3 != dP.allDates.end()) {
-                dP.dateIdx = static_cast<int>(std::distance(dP.allDates.begin(), it3));
-            } else {
-                dP.dateIdx = static_cast<int>(dP.allDates.size())-1; // Set to last if today not found
-            }
+    }
+    ImGui::SetNextItemWidth(120);
+    if (ImGui::InputText("Type or Paste Date (YYYY-MM-DD)", dP.dateBuf, sizeof(dP.dateBuf))) {
+        std::string typedDate(dP.dateBuf);
+        auto it2 = std::find(dP.allDates.begin(), dP.allDates.end(), typedDate);
+        if (it2 != dP.allDates.end()) {
+            dP.dateIdx = static_cast<int>(std::distance(dP.allDates.begin(), it2));
+            dP.selectedDate = *it2;
             dP.loadedData = false;
+        } else {
+            dP.selectedDate = typedDate; // Don't update dateIdx unless it's a valid date
         }
-    } else {
-        ImGui::Text("No dates available.");
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Set Today's Date")) {
+        dP.selectedDate = getToday();
+        strncpy(dP.dateBuf, dP.selectedDate.c_str(), sizeof(dP.dateBuf)-1);
+        dP.dateBuf[sizeof(dP.dateBuf)-1] = '\0';
+        auto it3 = std::find(dP.allDates.begin(), dP.allDates.end(), dP.selectedDate);
+        if (it3 != dP.allDates.end()) {
+            dP.dateIdx = static_cast<int>(std::distance(dP.allDates.begin(), it3));
+        } else {
+            dP.dateIdx = static_cast<int>(dP.allDates.size())-1; // Set to last if today not found
+        }
+        dP.loadedData = false;
     }
     // Find status for selected date (scan in ascending order, use last found)
     dP.status = "tentative";
@@ -552,18 +550,6 @@ void BudgetManager::ShowIncomeInput() {
     ImGui::Separator();
 }
 
-template<typename T>
-void BudgetManager::ComputeDependentValues(std::vector<T>& items, const std::string filename, const std::string keyStart, const std::string& date, const std::string& status) {
-    // Update summary values for Income or Expense
-    double totalYearly = 0.0;
-    for (const auto& item : items) {
-        totalYearly += item.amountNet_year;
-    }
-    double avgMonthly = totalYearly / 12.0f;
-    //save__to__json(totalYearly, filename, keyStart+".totalYearly");
-    //save__to__json(avgMonthly, filename, keyStart+".avgMonthly");
-}
-
 void BudgetManager::ShowExpenseInput() {
     SelectDateUI(expenses, expenseDate, "expenses.expenses");
     if (!expenseDate.loadedData) {
@@ -571,13 +557,11 @@ void BudgetManager::ShowExpenseInput() {
     }
     // UI state variables for categories and persons
     static std::string buttonLabel;
-    static std::vector<std::string> categories;
     static bool isLoadedCategories = false;
-    static int idxSelectedCategory = 0;
-    static char newCategory[64] = "";
-    static std::vector<std::string> persons;
     static bool isLoadedPersons = false;
-    static int idxSelectedPerson = 0;
+    static int  idxSelectedCategory = 0;
+    static int  idxSelectedPerson = 0;
+    static char newCategory[64] = "";
     static char newPerson[64] = "";
     // Combo options and indices
     static const char* accountTypeOptions[] = { "Budgetkonto", "Forbrugskonto", "Lønkonto" };
@@ -630,18 +614,18 @@ void BudgetManager::ShowExpenseInput() {
     ImGui::InputText("Source", source, IM_ARRAYSIZE(source));
     // Categories
     extension = "expenses.categories";
-    CreateComboWithDeleteAndAdd(categories, isLoadedCategories, idxSelectedCategory, "category", filename, extension, newCategory);
-    if (!categories.empty() && idxSelectedCategory >= 0 && idxSelectedCategory < (int)categories.size()) {
-        strncpy(category, categories[idxSelectedCategory].c_str(), sizeof(category) - 1);
+    CreateComboWithDeleteAndAdd(expenseCategories, isLoadedCategories, idxSelectedCategory, "category", filename, extension, newCategory);
+    if (!expenseCategories.empty() && idxSelectedCategory >= 0 && idxSelectedCategory < (int)expenseCategories.size()) {
+        strncpy(category, expenseCategories[idxSelectedCategory].item.c_str(), sizeof(category) - 1);
         category[sizeof(category) - 1] = '\0';
     } else {
         category[0] = '\0';
     }
     // Persons
-    extension = "persons";
-    CreateComboWithDeleteAndAdd(persons, isLoadedPersons, idxSelectedPerson, "person", filename, extension, newPerson);
-    if (!persons.empty() && idxSelectedPerson >= 0 && idxSelectedPerson < (int)persons.size()) {
-        strncpy(person, persons[idxSelectedPerson].c_str(), sizeof(person) - 1);
+    extension = "expenses.persons";
+    CreateComboWithDeleteAndAdd(expensePersons, isLoadedPersons, idxSelectedPerson, "person", filename, extension, newPerson);
+    if (!expensePersons.empty() && idxSelectedPerson >= 0 && idxSelectedPerson < (int)expensePersons.size()) {
+        strncpy(person, expensePersons[idxSelectedPerson].item.c_str(), sizeof(person) - 1);
         person[sizeof(person) - 1] = '\0';
     } else {
         person[0] = '\0';
@@ -755,70 +739,242 @@ void BudgetManager::ShowExpenseInput() {
     ImGui::Separator();
 }
 
-void BudgetManager::CreateComboWithDeleteAndAdd(std::vector<std::string>& item, bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem)
+void BudgetManager::CreateComboWithDeleteAndAdd(std::vector<ExpenseItems>& item, bool& isLoaded, int& selectedIndex, const std::string& label, const std::string& filename, const std::string& extension, char* newItem)
 {
-    if (extension.empty()) {
-        std::cerr << "[ERROR] CreateComboWithDeleteAndAdd: extension key is empty for label '" << label << "'." << std::endl;
-        return;
-    }
     if (extension.empty()) {
         std::cerr << "[ERROR] CreateComboWithDeleteAndAdd: extension key is empty for label '" << label << "'." << std::endl;
         return;
     }
     if (!isLoaded) {
         // Load categories from expenses.json file
-        isLoaded = true;   
-        load_from_json(item, filename, extension,"");
+        isLoaded = true;
+        load_from_json(item, filename, extension, "");
     }
-    std::string btnLabel;
-    // Combo selection for categor
+    static float minWidth = 120.0f, charWidth = 0.0f, inputWidth = 0.0f;
+    charWidth = ImGui::CalcTextSize(newItem).x + 30.0f;
+    inputWidth = std::max(minWidth, charWidth);
+
+    // Reload items if needed
+    if (!isLoaded) {
+        load_from_json(item, filename, extension, "");
+        isLoaded = true;
+        // Ensure selectedIndex is valid
+        if (selectedIndex >= static_cast<int>(item.size()))
+            selectedIndex = item.empty() ? 0 : static_cast<int>(item.size()) - 1;
+    }
+
+    // Combo for selecting item
     if (!item.empty()) {
-        const char* preview_value = item[selectedIndex].c_str();
-        const std::string comboLabel = "Select " + label;
+        // Only show non-empty items in combo
+        std::vector<int> validIndices;
+        for (int i = 0; i < static_cast<int>(item.size()); ++i) {
+            if (!item[i].item.empty())
+                validIndices.push_back(i);
+        }
+        int comboIndex = 0;
+        bool found = false;
+        for (size_t i = 0; i < validIndices.size(); ++i) {
+            if (validIndices[i] == selectedIndex) {
+            comboIndex = static_cast<int>(i);
+            found = true;
+            break;
+            }
+        }
+        if (!found && !validIndices.empty()) {
+            selectedIndex = validIndices[0];
+            comboIndex = 0;
+        }
+        const char* preview_value = validIndices.empty() ? "" : item[validIndices[comboIndex]].item.c_str();
+        std::string comboLabel = "Select " + label;
+        ImGui::SetNextItemWidth(inputWidth);
         if (ImGui::BeginCombo(comboLabel.c_str(), preview_value, ImGuiComboFlags_WidthFitPreview)) {
-            for (int n = 0; n < static_cast<int>(item.size()); n++) {
-                bool is_selected = (selectedIndex == n);
-                if (ImGui::Selectable(item[n].c_str(), is_selected))
-                    selectedIndex = n;
+            for (size_t n = 0; n < validIndices.size(); n++) {
+                bool is_selected = (comboIndex == static_cast<int>(n));
+                if (ImGui::Selectable(item[validIndices[n]].item.c_str(), is_selected)) {
+                    selectedIndex = validIndices[n];
+                }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
         }
-        // Add a delete button option for the selected category
-        btnLabel = "Delete " + label;
+        // Delete button for selected item
+        std::string btnLabel = "Delete " + label;
         ImGui::SameLine();
-        if (ImGui::Button(btnLabel.c_str())  && !item.empty()) {
-            item.erase(item.begin() + selectedIndex);
-            if (selectedIndex >= static_cast<int>(item.size()))
-                selectedIndex = static_cast<int>(item.size()) - 1;
-            //save__to__json(item, filename, extension);
-            isLoaded = false; // Force reload to update the combo
+        if (ImGui::Button(btnLabel.c_str()) && !item.empty() && !item[selectedIndex].item.empty()) {
+            int idToDelete = item[selectedIndex].id;
+            ExpenseItems delItem{idToDelete, ""};
+            std::vector<ExpenseItems> toSave = {delItem};
+            save__to__json(toSave, filename, extension, expenseDate.selectedDate, "tentative");
+            isLoaded = false;
+            selectedIndex = 0;
         }
         ImGui::SameLine();
     }
-    // Add new category input and button
-    float minWidth = 120.0f;
-    float charWidth = ImGui::CalcTextSize(newItem).x + 30.0f; // 30 for padding and hint
-    float inputWidth = std::max(minWidth, charWidth);
+
+    // Input for new item
     ImGui::SetNextItemWidth(inputWidth);
-    btnLabel = "##New" + label;
+    std::string inputLabel = "##New" + label;
     std::string hintLabel = "Add new " + label;
-    ImGui::InputTextWithHint(btnLabel.c_str(), hintLabel.c_str(), newItem, 128);
+    ImGui::InputTextWithHint(inputLabel.c_str(), hintLabel.c_str(), newItem, 128);
     ImGui::SameLine();
-    btnLabel = "Add " + label;
-    if (ImGui::Button(btnLabel.c_str()) && strlen(newItem) > 0) {
-        item.push_back(std::string(newItem));
-        selectedIndex = static_cast<int>(item.size()) - 1;
+    std::string addBtnLabel = "Add " + label;
+    if (ImGui::Button(addBtnLabel.c_str()) && strlen(newItem) > 0) {
+        // Find unused id
+        std::set<int> usedIds;
+        for (const auto& it : item) {
+            usedIds.insert(it.id);
+        }
+        int newId = 1;
+        while (usedIds.find(newId) != usedIds.end()) ++newId;
+        ExpenseItems newExpenseItem{newId, std::string(newItem)};
+        std::vector<ExpenseItems> toSave = {newExpenseItem};
+        save__to__json(toSave, filename, extension, expenseDate.selectedDate, "tentative");
         newItem[0] = '\0';
-        //save__to__json(item, filename, extension);
-        isLoaded = false; // Force reload to update the combo
+        isLoaded = false;
+        selectedIndex = static_cast<int>(item.size()); // Will be updated on reload
     }
 }
 
 template<typename T>
 void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, const std::vector<std::string>& tableHeaders, const std::vector<std::string>& tableOrder, const std::string filename, const std::string key, std::map<int, std::string>& id_to_date, std::function<void(const T&)> editCallback, std::function<void(const T&)> deleteCallback) {
-    // Add an extra column for Edit button
+    std::vector<T> itemsUsed;
+    for (int i = 0; i < items.size(); ++i) {
+        const auto& item = items[i];
+        nlohmann::json j = item; // Serialize struct to JSON
+        bool hasZeroAmount = false;
+        // Check if any field contains "amount" and its value is zero
+        for (auto it = j.begin(); it != j.end(); ++it) {
+            if (it.key().find("amount") != std::string::npos && it.value().is_number()) {
+                if (it.value().get<double>() == 0.0) {
+                    hasZeroAmount = true;
+                    break; // Found a zero amount, no need to check further
+                }
+            }
+        }
+        if (hasZeroAmount) {
+            continue; // Skip this row and jump to the next iteration
+        }
+        itemsUsed.push_back(item);
+    }
+
+    // Sorting options UI
+    static int sortOption = 0;
+    static bool sortAscending = true;
+    const char* sortOptions[] = {
+        "Source (A-Z)",
+        "Amount (Low-High)",
+        "Date Modified (Old-New)"
+    };
+    const char* expenseSortOptions[] = {
+        "Source (A-Z)",
+        "Amount (Low-High)",
+        "Date Modified (Old-New)",
+        "Category (A-Z)",
+        "Person (A-Z)",
+        "Account Type (A-Z)"
+    };
+    bool isExpenseTable = std::string(tableName).find("Expense") != std::string::npos;
+    int numSortOptions = isExpenseTable ? IM_ARRAYSIZE(expenseSortOptions) : IM_ARRAYSIZE(sortOptions);
+    const char** options = isExpenseTable ? expenseSortOptions : sortOptions;
+    ImGui::Combo("Sort By", &sortOption, options, numSortOptions);
+    ImGui::Checkbox("Direction", &sortAscending);
+
+    // Sort itemsUsed based on selected option
+    if (!itemsUsed.empty()) {
+        int option = sortOption;
+        if (!isExpenseTable && option > 2) option = 2; // Clamp for non-expense tables
+        switch (option) {
+            case 0: // Source (A-Z)
+                std::sort(itemsUsed.begin(), itemsUsed.end(), [&](const T& a, const T& b) {
+                    if (sortAscending)
+                        return a.source < b.source;
+                    else
+                        return a.source > b.source;
+                });
+                break;
+            case 1: // Amount (Low-High)
+                std::sort(itemsUsed.begin(), itemsUsed.end(), [&](const T& a, const T& b) {
+                    double va = 0.0, vb = 0.0;
+                    nlohmann::json ja = a, jb = b;
+                    if (ja.contains("amountNet_month") && jb.contains("amountNet_month")) {
+                        va = ja["amountNet_month"].get<double>();
+                        vb = jb["amountNet_month"].get<double>();
+                    } else if (ja.contains("amountNet") && jb.contains("amountNet")) {
+                        va = ja["amountNet"].get<double>();
+                        vb = jb["amountNet"].get<double>();
+                    } else if (ja.contains("amountNet_year") && jb.contains("amountNet_year")) {
+                        va = ja["amountNet_year"].get<double>();
+                        vb = jb["amountNet_year"].get<double>();
+                    }
+                    if (sortAscending)
+                        return va < vb;
+                    else
+                        return va > vb;
+                });
+                break;
+            case 2: // Date Modified (Old-New)
+                std::sort(itemsUsed.begin(), itemsUsed.end(), [&](const T& a, const T& b) {
+                    auto ita = id_to_date.find(a.id);
+                    auto itb = id_to_date.find(b.id);
+                    std::string da = (ita != id_to_date.end()) ? ita->second : "";
+                    std::string db = (itb != id_to_date.end()) ? itb->second : "";
+                    if (sortAscending)
+                        return da < db;
+                    else
+                        return da > db;
+                });
+                break;
+            case 3: // Category (A-Z)
+                if (isExpenseTable) {
+                    std::sort(itemsUsed.begin(), itemsUsed.end(), [&](const T& a, const T& b) {
+                        std::string ca, cb;
+                        nlohmann::json ja = a, jb = b;
+                        if (ja.contains("category") && jb.contains("category")) {
+                            ca = ja["category"].get<std::string>();
+                            cb = jb["category"].get<std::string>();
+                        }
+                        if (sortAscending)
+                            return ca < cb;
+                        else
+                            return ca > cb;
+                    });
+                }
+                break;
+            case 4: // Person (A-Z)
+                if (isExpenseTable) {
+                    std::sort(itemsUsed.begin(), itemsUsed.end(), [&](const T& a, const T& b) {
+                        std::string pa, pb;
+                        nlohmann::json ja = a, jb = b;
+                        if (ja.contains("person") && jb.contains("person")) {
+                            pa = ja["person"].get<std::string>();
+                            pb = jb["person"].get<std::string>();
+                        }
+                        if (sortAscending)
+                            return pa < pb;
+                        else
+                            return pa > pb;
+                    });
+                }
+                break;
+            case 5: // Account Type (A-Z)
+                if (isExpenseTable) {
+                    std::sort(itemsUsed.begin(), itemsUsed.end(), [&](const T& a, const T& b) {
+                        std::string ta, tb;
+                        nlohmann::json ja = a, jb = b;
+                        if (ja.contains("typeAccount") && jb.contains("typeAccount")) {
+                            ta = ja["typeAccount"].get<std::string>();
+                            tb = jb["typeAccount"].get<std::string>();
+                        }
+                        if (sortAscending)
+                            return ta < tb;
+                        else
+                            return ta > tb;
+                    });
+                }
+                break;
+        }
+    }
     if (ImGui::BeginTable(tableName, tableHeaders.size() + 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
         for (int i = 0; i < tableHeaders.size(); ++i) {
             ImGui::TableSetupColumn(tableHeaders[i].c_str());
@@ -828,22 +984,9 @@ void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, co
         ImGui::TableSetupColumn("Delete");
         ImGui::TableHeadersRow();
         // Loop over data and populate rows
-        for (int i = 0; i < items.size(); ++i) {
-            const auto& item = items[i];
+        for (int i = 0; i < itemsUsed.size(); ++i) {
+            const auto& item = itemsUsed[i];
             nlohmann::json j = item; // Serialize struct to JSON
-            bool hasZeroAmount = false;
-            // Check if any field contains "amount" and its value is zero
-            for (auto it = j.begin(); it != j.end(); ++it) {
-                if (it.key().find("amount") != std::string::npos && it.value().is_number()) {
-                    if (it.value().get<double>() == 0.0) {
-                        hasZeroAmount = true;
-                        break; // Found a zero amount, no need to check further
-                    }
-                }
-            }
-            if (hasZeroAmount) {
-                continue; // Skip this row and jump to the next iteration
-            }
             ImGui::TableNextRow();
             int col = 0;
             for (const auto& field : tableOrder) {
@@ -851,9 +994,9 @@ void BudgetManager::CreateTable(const char* tableName, std::vector<T>& items, co
                 if (j[field].is_number()) {
                     ImGui::TextUnformatted(format_euro(j[field]).c_str());
                 } else if (j[field].is_string()) {
-                    ImGui::TextUnformatted(j[field].get<std::string>().c_str());
+                ImGui::TextUnformatted(j[field].get<std::string>().c_str());
                 } else {
-                    ImGui::TextUnformatted("?");
+                ImGui::TextUnformatted("?");
                 }
             }
             // Show last modified date in a new column
@@ -895,7 +1038,8 @@ void BudgetManager::PlotBudget()
     if (ImGui::SliderInt("Pay Raise Rate (%/year)", &payRaiseRate, 0, 10))  {setMonths(monthsTmp); updateMonthlyPlotValues();}
     if (ImGui::SliderInt("Inflation Rate (%/year)", &inflationRate, 0, 10)) {setMonths(monthsTmp); updateMonthlyPlotValues();}
     // Display current total balance
-    ImGui::Text("Current Total Bank Balance: %s DKK", format_euro(histBalance.amount.back()).c_str());
+    double currentBalance = histBalance.amount.empty() ? 0.0 : histBalance.amount.back();
+    ImGui::Text("Current Total Bank Balance: %s DKK", format_euro(currentBalance).c_str());
     ImGui::Text("Set a Target Amount (DKK) and see when it's reached:");
     ImGui::InputDouble("Target Amount (DKK)", &targetValue, 10000.0, 1000000.0, "%.0f");
 

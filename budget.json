@@ -17,18 +17,69 @@
             },
             "date": "2025-09-28",
             "expenses": {
+                "persons": [
+                    {
+                        "id": 1,
+                        "item": "Skatti"
+                    },
+                    {
+                        "id": 2,
+                        "item": "Skattimus"
+                    },
+                    {
+                        "id": 3,
+                        "item": "Kayla"
+                    },
+                    {
+                        "id": 4,
+                        "item": "Alle"
+                    }
+                ],
                 "categories": [
-                    "Bolig",
-                    "Forsikring",
-                    "Underholdning",
-                    "Telefoni",
-                    "Fagforening",
-                    "A-kasse",
-                    "Helbred",
-                    "Gaver",
-                    "Ferie",
-                    "Mad",
-                    "Transport"
+                    {
+                        "id": 1,
+                        "item": "Bolig"
+                    },
+                    {
+                        "id": 2,
+                        "item": "Forsikring"
+                    },
+                    {
+                        "id": 3,
+                        "item": "Underholdning"
+                    },
+                    {
+                        "id": 4,
+                        "item": "Telefoni"
+                    },
+                    {
+                        "id": 5,
+                        "item": "Fagforening"
+                    },
+                    {
+                        "id": 6,
+                        "item": "A-kasse"
+                    },
+                    {
+                        "id": 7,
+                        "item": "Helbred"
+                    },
+                    {
+                        "id": 8,
+                        "item": "Gaver"
+                    },
+                    {
+                        "id": 9,
+                        "item": "Ferie"
+                    },
+                    {
+                        "id": 10,
+                        "item": "Mad"
+                    },
+                    {
+                        "id": 11,
+                        "item": "Transport"
+                    }
                 ],
                 "expenses": [
                     {
@@ -599,12 +650,6 @@
                     }
                 ]
             },
-            "persons": [
-                "Skatti",
-                "Skattimus",
-                "Kayla",
-                "Alle"
-            ],
             "status": "confirmed"
         },
         {

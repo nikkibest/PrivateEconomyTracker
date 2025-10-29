@@ -55,8 +55,8 @@ struct Expense {
     double amountNet_month;
     double amountNet_year;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeAccount);
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Expense, id, source, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category, person, typeAccount);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Expense, id, source, person, typeAccount, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category);
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Expense, id, source, person, typeAccount, nrAnnualPayments, amountNet, amountNet_month, amountNet_year, category);
 };
 inline std::vector<std::string> expenseTableHeader = {
     "Source", "Category", "Person", "Account", "Nr. Annual Payments", "Amount (DKK)", "Monthly (DKK)", "Yearly (DKK)"
@@ -64,6 +64,15 @@ inline std::vector<std::string> expenseTableHeader = {
 inline std::vector<std::string> expenseTableOrder = {
     "source", "category", "person", "typeAccount", "nrAnnualPayments", "amountNet", "amountNet_month", "amountNet_year"
 };
+
+struct ExpenseItems {
+    int id = 0;
+    std::string item;
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ExpenseItems, id, item);
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ExpenseItems, id, item);
+};
+
 
 // Type trait to check if a type is a std::vector
 template<typename T>
@@ -187,10 +196,13 @@ void load_from_json_impl(T& out, nlohmann::json* ptr) {
 template<typename T>
 inline void load_from_json(T& out, const std::string& filename, const std::string& key, const std::string& date, std::map<int, std::string>& id_to_date) {
     std::ifstream file(filename);
-    if (!file){
-        std::cerr << "[ERROR] load_from_json: File '" << filename << "' does not exist.\n";
-        std::cin.get();
-        std::exit(EXIT_FAILURE);
+    if (!file) {
+        // Create file with {"history": []}
+        std::ofstream outFile(filename);
+        outFile << "{\n    \"history\": []\n}";
+        outFile.close();
+        // Now open again for reading
+        file.open(filename);
     }
     nlohmann::json j;
     file >> j;
